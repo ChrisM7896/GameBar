@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<head>
+    <style>
+        .game-button {
+            width: 150px;
+            height: 150px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .game-labels {
+            margin-top: 10px;
+            width: 150px;
+        }
+        .button-divs {
+            text-align: center;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-divs">
+        <button class="game-button"></button><br><span class="game-labels">But what happens if the label is really long?</span>
+    </div>
+    <div class="button-divs">
+        <button class="game-button"></button><br><span class="game-labels">WIP</span>
+    </div>
+    <div class="button-divs">
+        <button class="game-button"></button><br><span class="game-labels">WIP</span>
+    </div>
+</body>
+<script>
+    /*
+        To Do:
+        - Button label character limit ✅
+        - Hover effects for buttons:
+            - Shrink a few pixels ✅
+            - Glow effect ✅
+            - Full label visibility
+        - Button functionality:
+            - Open game pages
+    */
+
+    Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+        if (label.textContent.length >= 12) {
+            var fullText = label.innerHTML;
+            label.innerHTML = fullText.substring(0, 12) + '...';
+        }
+    });
+
+    Array.from(document.getElementsByClassName('game-button')).forEach(button => {
+        button.addEventListener('mouseover', () => {
+            button.style.transform = 'scale(0.95)';
+            button.style.boxShadow = '0 0 10px #4d664d';
+        });
+        button.addEventListener('mouseout', () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = 'none';
+        });
+    });
+
+</script>
+<%- include('partials/footer') %>
