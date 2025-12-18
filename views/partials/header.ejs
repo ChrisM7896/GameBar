@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameBar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #4d664d;
+            text-shadow: 2px 2px 3px rgb(13, 71, 71);
+            font-weight: bold;
+            background-color: #0f0f0f;
+        }
+        .partials-header {
+            color: #4d664d;
+        }
+        #partials-header-hr {
+            width: 100%;
+            border: 1px solid;
+            box-shadow: 0px 0px 20px rgb(13, 71, 71);
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+        #partials-header-title {
+            text-shadow: 0px 0px 20px rgb(13, 71, 71);
+            font-size: 2em;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 5px;
+        }
+        #partials-header-user {
+            margin: 7px;
+            font-weight: 100;
+            display: inline-flex;
+        }
+        #partials-header-logout-button {
+            margin: 7px;
+            padding: 5px 10px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1 class='partials-header' id="partials-header-title">GameBar</h1>
+        <p class='partials-header' id="partials-header-user">Logged in as <%- user %></p><button class="partials-header" id="partials-header-logout-button" onclick="location.href='/logout'">Logout</button>
+        <hr class='partials-header' id="partials-header-hr"/>
+    </div>
+
+</body>
