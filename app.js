@@ -79,20 +79,6 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
-app.get('/sendpogs', isAuthenticated, (req, res) => {
-    const data = {
-        from: 110,
-        to: 40,
-        amount: 5,
-        pin: 7896,
-        reason: "guh"
-    }
-
-    socket.emit('transferDigipogs', data);
-    
-    res.send('Pogs sent!');
-});
-
 socket.on('connect', () => {
     console.log('Connected to auth server');
     socket.emit('getActiveClass');
