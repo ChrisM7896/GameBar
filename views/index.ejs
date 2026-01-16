@@ -9,57 +9,87 @@
             border-radius: 5px;
             cursor: pointer;
             margin: 5px;
+            padding: 0px;
         }
         .game-labels {
-            margin-top: 10px;
-            width: 150px;
+            background-color: black;
+        }
+        .label-box {
+            width: 155px;
+            overflow: hidden;
+            height: 20px;
+            text-align: center;
+            position: absolute;
         }
         .button-divs {
-            text-align: center;
             display: inline-block;
+        }
+        .button-images {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            object-fit: cover;
+            margin: 0px;
         }
     </style>
 </head>
 <body>
     <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">But what happens if the label is really long?</span>
+        <button id='button-1'class="game-button"><img src="/monkey.jpg" class="button-images"></button><br>
+        <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">But what happens if the label is really long?</span></div>
     </div>
     <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">WIP</span>
+        <button id='button-2' class="game-button"></button><br>
+        <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">WIP</span></div>
     </div>
     <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">WIP</span>
+        <button id='button-3' class="game-button"></button><br>
+        <div id='label-box-button-3' class="label-box"><span id='label-button-3' class="game-labels">WIP</span></div>
     </div>
 </body>
 <script>
-    /*
-        To Do:
-        - Button label character limit ✅
-        - Hover effects for buttons:
-            - Shrink a few pixels ✅
-            - Glow effect ✅
-            - Full label visibility
-        - Button functionality:
-            - Open game pages
-    */
-
+    var labels = {}
     Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-        if (label.textContent.length >= 12) {
-            var fullText = label.innerHTML;
-            label.innerHTML = fullText.substring(0, 12) + '...';
-        }
+        labelText = label.innerHTML;
+        labels[label.id] = labelText;
     });
+    console.log(labels);
+
+    function limitTextLength(text, maxLength) {
+        Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+            if (label.textContent.length >= 12) {
+                var fullText = label.innerHTML;
+                label.innerHTML = fullText.substring(0, 12) + '...';
+            }
+        });
+    }
 
     Array.from(document.getElementsByClassName('game-button')).forEach(button => {
         button.addEventListener('mouseover', () => {
             button.style.transform = 'scale(0.95)';
             button.style.boxShadow = '0 0 10px #4d664d';
+            currentButton = button.id;
+            var label = document.getElementById('label-' + currentButton);
+            var labelBox = document.getElementById('label-box-' + currentButton);
+            labelBox.style.height = '100px';
+            label.innerHTML = labels[label.id];
         });
         button.addEventListener('mouseout', () => {
             button.style.transform = 'scale(1)';
             button.style.boxShadow = 'none';
+            var labelBox = document.getElementById('label-box-' + button.id);
+            labelBox.style.height = '20px';
+            limitTextLength();
         });
     });
+
+    function gameLoop() {
+        
+        requestAnimationFrame(gameLoop);
+    }
+    
+    limitTextLength();
+    gameLoop();
 
 </script>
 <%- include('partials/footer') %>
