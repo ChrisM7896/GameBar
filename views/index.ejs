@@ -1,5 +1,6 @@
 <%- include('partials/header') %>
 <head>
+    <title>GameBar || Home</title>
     <style>
         .game-button {
             width: 150px;
@@ -10,9 +11,10 @@
             cursor: pointer;
             margin: 5px;
             padding: 0px;
+            overflow: hidden;
         }
         .game-labels {
-            background-color: black;
+            background-color: 0f0f0f;
         }
         .label-box {
             width: 155px;
@@ -25,27 +27,30 @@
             display: inline-block;
         }
         .button-images {
-            width: 100%;
-            height: 100%;
-            border-radius: 5px;
+            width: 150px;
+            height: 150px;
             object-fit: cover;
-            margin: 0px;
+            border-radius: 5px;
+            pointer-events: none;
+            display: block;
         }
     </style>
 </head>
 <body>
+
+    <!-- BUTTON ONE || Virtual Pet -->
     <div class="button-divs">
-        <button id='button-1'class="game-button"><img src="/monkey.jpg" class="button-images"></button><br>
-        <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">But what happens if the label is really long?</span></div>
+        <button id='button-1' class="game-button"><img class="button-images" src=/wip.png></button><br>
+        <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">Virtual Pet</span></div>
     </div>
+
+    <!-- BUTTON TWO || Coming Soon... -->
     <div class="button-divs">
         <button id='button-2' class="game-button"></button><br>
-        <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">WIP</span></div>
+        <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">Coming Soon...</span></div>
     </div>
-    <div class="button-divs">
-        <button id='button-3' class="game-button"></button><br>
-        <div id='label-box-button-3' class="label-box"><span id='label-button-3' class="game-labels">WIP</span></div>
-    </div>
+
+</body>
 </body>
 <script>
     var labels = {}
@@ -53,13 +58,12 @@
         labelText = label.innerHTML;
         labels[label.id] = labelText;
     });
-    console.log(labels);
 
     function limitTextLength(text, maxLength) {
         Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-            if (label.textContent.length >= 12) {
+            if (label.textContent.length >= 15) {
                 var fullText = label.innerHTML;
-                label.innerHTML = fullText.substring(0, 12) + '...';
+                label.innerHTML = fullText.substring(0, 15) + '...';
             }
         });
     }
