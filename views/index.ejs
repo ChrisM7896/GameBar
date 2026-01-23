@@ -34,6 +34,21 @@
             pointer-events: none;
             display: block;
         }
+        #changelog {
+            width: 80px;
+            height: 80px;
+            border: solid 2px #4d664d;
+            border-radius: 40px;
+        }
+        #changelog img {
+            width: 80px;
+            height: 80px;
+        }
+        #changelog-button-div {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -48,6 +63,11 @@
     <div class="button-divs">
         <button id='button-2' class="game-button"></button><br>
         <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">Coming Soon...</span></div>
+    </div>
+
+    <br><br><br>
+    <div id="changelog-button-div">
+        <button class="game-button" id="changelog" onclick="location.href='/changes'"><img src="/file.png"></button>
     </div>
 
 </body>

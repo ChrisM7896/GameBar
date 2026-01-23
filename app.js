@@ -54,6 +54,10 @@ app.get('/', isAuthenticated, (req, res) => {
     res.render('index', { user: req.session.user });
 });
 
+app.get('/changes', isAuthenticated, (req, res) => {
+    res.render('changes', { user: req.session.user });
+});
+
 app.get('/login', (req, res) => {
     if (req.query.token) {
         let tokenData = jwt.decode(req.query.token);

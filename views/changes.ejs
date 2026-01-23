@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<head>
+    <title>GameBar - Changelog</title>
+    <style>
+        .changelog-header {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            margin-top: 5px;
+        }
+        .changelog-innerli {
+            margin-left: 25px;
+        }
+        .changelog-dropdown {
+            background-color: #172222;
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            padding: 10px;
+            margin-right: 100px;
+            cursor: pointer;
+        }
+        .changelog-dropdown summary {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body> 
+    <h1> Changelog </h1>
+    <ul>
+        <details class="changelog-dropdown">
+            <summary>Pre-release</summary>
+            <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+            <div class="changelog-header">v0.1.0 - GameBar Homepage Created - 1/16/2026</div>
+                <li class="changelog-innerli">Added header</li>
+                <li class="changelog-innerli">Added game buttons</li>
+                <li class="changelog-innerli">Added game label character limit + hover effects</li>
+                <li class="changelog-innerli">Made thumbnail images work properly (created WIP placeholder)</li>
+            <div class="changelog-header">v0.1.1 - Changelog created; Start of logging - 1/23/2026</div>
+                <li class="changelog-innerli">Added changelog button to homepage</li>
+                <li class="changelog-innerli">Created and formatted changelog page</li>
+                <li class="changelog-innerli">Added route to /changes; made changelog button work</li>
+        </details>
+    
+    </ul>
+</body>
+<%- include('partials/footer') %>
