@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
-
         body {
             font-family: Arial, sans-serif;
             color: #4d664d;
@@ -13,9 +12,11 @@
             font-weight: bold;
             background-color: #0f0f0f;
         }
+
         .partials-header {
             color: #4d664d;
         }
+
         #partials-header-hr {
             width: 100%;
             border: 1px solid;
@@ -23,6 +24,7 @@
             margin-top: 12px;
             margin-bottom: 20px;
         }
+
         #partials-header-title {
             text-shadow: 0px 0px 20px rgb(13, 71, 71);
             font-size: 2em;
@@ -31,11 +33,13 @@
             transform: translateX(-50%);
             margin: 5px;
         }
+
         #partials-header-user {
             margin: 7px;
             font-weight: 100;
             display: inline-flex;
         }
+
         #partials-header-logout-button {
             margin: 7px;
             padding: 5px 10px;
@@ -48,30 +52,66 @@
 
         #partials-header-version {
             position: absolute;
-            right: 840px;
-            top: 29px;
             font-size: 0.9em;
             font-weight: 100;
         }
+
         #partials-header-logo {
             text-decoration: none;
             color: inherit;
         }
-        
-        link[rel="icon"] {
-            border-radius: 50%;
-        }
-
     </style>
 </head>
+
 <body>
     <div>
         <a href='/' id="partials-header-logo">
-            <h1 class='partials-header' id="partials-header-title">GameBar</h1>
-            <div id="partials-header-version">v0.1.3</div>
+            <h1 class='partials-header' id="partials-header-title"><%- pageName %></h1>
+            <div id="partials-header-version"><%- version %></div>
         </a>
-        <p class='partials-header' id="partials-header-user">Logged in as <%- user %></p><button class="partials-header" id="partials-header-logout-button" onclick="location.href='/logout'">Logout</button>
-        <hr class='partials-header' id="partials-header-hr"/>
+        <p class='partials-header' id="partials-header-user">Logged in as <%- user %></p><button class="partials-header"
+            id="partials-header-logout-button" onclick="location.href='/logout'">Logout</button>
+        <hr class='partials-header' id="partials-header-hr" />
     </div>
 
 </body>
+<script>
+    let splashList = [
+        "New games coming soon!",
+        "Check out the changelog for updates!",
+        "Now with more colors!",
+        "Totally not a stolen idea!",
+        "Steven fix it",
+        "Landon landon landon",
+        "Insert ChatGPT prompt",
+        "It no worky",
+        "RIP Formpix, 202x-2026",
+        "Your mother",
+        "Don't refresh games, it'll softlock you :D",
+        "We are NOT a dictatorship",
+        "Totally 100% accurate to the originals",
+        "Favicons suck",
+        "I told yall stop playin'",
+        "Now with more Taco Bell",
+        "Obama have dih",
+        "This is NOT a Minecraft reference",
+        "67",
+        "69",
+        "Cass is racist",
+        "Gabby you're late",
+        "Hayden get off your phone your girlfriend can wait",
+        "Is there a Christian Martian in here?",
+        "Uppercase Kris approves",
+        "WE love capitalism",
+        "I should've gotten Pogipedia bro",
+        "I'm not paid enough for this",
+        "Chrissy Kirk",
+        "#1 CSS Developer", // make sure this one is in the wrong spot
+        "Jubekar",
+        "Days since last bug: 0",
+        "The one pog is real",
+        `"Ebanks that's the blackest thing I've ever seen you do" ~ Mr. Smith`
+    ];
+</script>
+
+</html>

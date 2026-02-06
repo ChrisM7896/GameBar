@@ -1,0 +1,25 @@
+<%- include('../../partials/header') %>
+
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/index/favicon.png';
+        document.head.appendChild(link);
+    </script>
+
+    <head>
+        <title>Gamebar - 2048</title>
+        <style>
+            #partials-header-version {
+                right: 840px;
+                top: 29px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <button id="2048play" onclick="window.location.href='/game_2048'">Play</button>
+    </body>
+
+    </html>

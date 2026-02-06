@@ -1,155 +1,210 @@
 <%- include('partials/header') %>
-<head>
-    <title>GameBar - Home</title>
-    <style>
-        .game-button {
-            width: 150px;
-            height: 150px;
-            background-color: #172222;
-            border: solid 1px #4d664d;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-            padding: 0px;
-            overflow: hidden;
-        }
-        .game-labels {
-            background-color: #0f0f0f;
-        }
-        .label-box {
-            width: 155px;
-            overflow: hidden;
-            height: 20px;
-            text-align: center;
-            position: absolute;
-        }
-        .button-divs {
-            display: inline-block;
-        }
-        .button-images {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 5px;
-            pointer-events: none;
-            display: block;
-        }
-        #changelog {
-            width: 80px;
-            height: 80px;
-            border: solid 2px #4d664d;
-            border-radius: 40px;
-        }
-        #changelog img {
-            width: 80px;
-            height: 80px;
-        }
-        #changelog-button-div {
-            position: absolute;
-            bottom: 30px;
-            left: 20px;
-        }
-    </style>
-</head>
-<body>
 
-    <!-- BUTTON ONE || Virtual Pet -->
-    <div class="button-divs">
-        <button id='button-1' class="game-button"><img class="button-images" src=/wip.png></button><br>
-        <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">Virtual Pet</span></div>
-    </div>
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/index/favicon.png';
+        document.head.appendChild(link);
+    </script>
 
-    <!-- BUTTON TWO || 2048 -->
-    <div class="button-divs">
-        <button id='button-2' class="game-button"><img class="button-images" src=/testing.png></button><br>
-        <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">2048</span></div>
-    </div>
-
-    <!-- BUTTON THREE || Snake -->
-    <div class="button-divs">
-        <button id='button-3' class="game-button"><img class="button-images" src=/wip.png></button><br>
-        <div id='label-box-button-3' class="label-box"><span id='label-button-3' class="game-labels">Snake</span></div>
-    </div>
-
-    <!-- BUTTON FOUR || Minesweeper -->
-    <div class="button-divs">
-        <button id='button-4' class="game-button"><img class="button-images" src=/postponed.png></button><br>
-        <div id='label-box-button-4' class="label-box"><span id='label-button-4' class="game-labels">Minesweeper</span></div>
-    </div>
-
-    <!-- BUTTON FIVE || Pac-Man -->
-    <div class="button-divs">
-        <button id='button-5' class="game-button"><img class="button-images" src=/wip.png></button><br>
-        <div id='label-box-button-5' class="label-box"><span id='label-button-5' class="game-labels">Pac-Man</span></div>
-    </div>
-
-    <!-- BUTTON SIX || Rock, Paper, Scissors -->
-    <div class="button-divs">
-        <button id='button-6' class="game-button"><img class="button-images" src=/postponed.png></button><br>
-        <div id='label-box-button-6' class="label-box"><span id='label-button-6' class="game-labels">Rock, Paper, Scissors</span></div>
-    </div>
-
-    <!-- BUTTON SEVEN || Tic Tac Toe -->
-    <div class="button-divs">
-        <button id='button-7' class="game-button"><img class="button-images" src=/postponed.png></button><br>
-        <div id='label-box-button-7' class="label-box"><span id='label-button-7' class="game-labels">Tic Tac Toe</span></div>
-    </div>
-
-    <!-- BUTTON EIGHT || Stack -->
-    <div class="button-divs">
-        <button id='button-8' class="game-button"><img class="button-images" src=/soontm.png></button><br>
-        <div id='label-box-button-8' class="label-box"><span id='label-button-8' class="game-labels">Stack</span></div>
-    </div>
-
-    <!-- CHANGELOG BUTTON -->
-    <div id="changelog-button-div">
-        <button class="game-button" id="changelog" onclick="location.href='/changes'"><img src="/file.png"></button>
-    </div>
-
-</body>
-</body>
-<script>
-    var labels = {}
-    Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-        labelText = label.innerHTML;
-        labels[label.id] = labelText;
-    });
-
-    function limitTextLength(text, maxLength) {
-        Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-            if (label.textContent.length >= 15) {
-                var fullText = label.innerHTML;
-                label.innerHTML = fullText.substring(0, 15) + '...';
+    <head>
+        <title>Gamebar - Home</title>
+        <style>
+            .game-button {
+                width: 150px;
+                height: 150px;
+                background-color: #172222;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                padding: 0px;
+                overflow: hidden;
             }
-        });
-    }
 
-    Array.from(document.getElementsByClassName('game-button')).forEach(button => {
-        button.addEventListener('mouseover', () => {
-            button.style.transform = 'scale(0.95)';
-            button.style.boxShadow = '0 0 10px #4d664d';
-            currentButton = button.id;
-            var label = document.getElementById('label-' + currentButton);
-            var labelBox = document.getElementById('label-box-' + currentButton);
-            labelBox.style.height = '100px';
-            label.innerHTML = labels[label.id];
-        });
-        button.addEventListener('mouseout', () => {
-            button.style.transform = 'scale(1)';
-            button.style.boxShadow = 'none';
-            var labelBox = document.getElementById('label-box-' + button.id);
-            labelBox.style.height = '20px';
-            limitTextLength();
-        });
-    });
+            .game-labels {
+                background-color: #0f0f0f;
+            }
 
-    function gameLoop() {
-        
-        requestAnimationFrame(gameLoop);
-    }
-    
-    limitTextLength();
-    gameLoop();
+            .label-box {
+                width: 155px;
+                overflow: hidden;
+                height: 20px;
+                text-align: center;
+                position: absolute;
+            }
 
-</script>
-<%- include('partials/footer') %>
+            .button-divs {
+                display: inline-block;
+            }
+
+            .button-images {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 5px;
+                pointer-events: none;
+                display: block;
+            }
+
+            #changelog {
+                width: 80px;
+                height: 80px;
+                border: solid 2px #4d664d;
+                border-radius: 40px;
+            }
+
+            #changelog img {
+                width: 80px;
+                height: 80px;
+            }
+
+            #changelog-button-div {
+                position: absolute;
+                bottom: 30px;
+                left: 20px;
+            }
+
+            #partials-header-version {
+                right: 840px;
+                top: 29px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <!-- BUTTON ONE || Virtual Pet -->
+        <div class="button-divs">
+            <button id='button-1' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">Virtual
+                    Pet</span></div>
+        </div>
+
+        <!-- BUTTON TWO || 2048 -->
+        <div class="button-divs">
+            <button id='button-2' class="game-button" onclick="location.href='/page_2048'">
+                <img class="button-images" src=2048/logo2048.png>
+            </button><br>
+
+            <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">2048</span>
+            </div>
+        </div>
+
+        <!-- BUTTON THREE || Snake -->
+        <div class="button-divs">
+            <button id='button-3' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-3' class="label-box"><span id='label-button-3' class="game-labels">Snake</span>
+            </div>
+        </div>
+
+        <!-- BUTTON FOUR || Minesweeper -->
+        <div class="button-divs">
+            <button id='button-4' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-4' class="label-box"><span id='label-button-4'
+                    class="game-labels">Minesweeper</span></div>
+        </div>
+
+        <!-- BUTTON FIVE || Pac-Man -->
+        <div class="button-divs">
+            <button id='button-5' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-5' class="label-box"><span id='label-button-5' class="game-labels">Pac-Man</span>
+            </div>
+        </div>
+
+        <!-- BUTTON SIX || Rock, Paper, Scissors -->
+        <div class="button-divs">
+            <button id='button-6' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-6' class="label-box"><span id='label-button-6' class="game-labels">Rock, Paper,
+                    Scissors</span></div>
+        </div>
+
+        <!-- BUTTON SEVEN || Tic Tac Toe -->
+        <div class="button-divs">
+            <button id='button-7' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-7' class="label-box"><span id='label-button-7' class="game-labels">Tic Tac
+                    Toe</span></div>
+        </div>
+
+        <!-- BUTTON EIGHT || Stack -->
+        <div class="button-divs">
+            <button id='button-8' class="game-button">
+                <img class="button-images" src=index/soontm.png>
+            </button><br>
+
+            <div id='label-box-button-8' class="label-box"><span id='label-button-8' class="game-labels">Stack</span>
+            </div>
+        </div>
+
+        <!-- CHANGELOG BUTTON -->
+        <div id="changelog-button-div">
+            <button class="game-button" id="changelog" onclick="location.href='/changes'"><img
+                    src="index/file.png"></button>
+        </div>
+
+    </body>
+    <script>
+        var labels = {}
+        Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+            labelText = label.innerHTML;
+            labels[label.id] = labelText;
+        });
+
+        function limitTextLength(text, maxLength) {
+            Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+                if (label.textContent.length >= 15) {
+                    var fullText = label.innerHTML;
+                    label.innerHTML = fullText.substring(0, 15) + '...';
+                }
+            });
+        }
+
+        Array.from(document.getElementsByClassName('game-button')).forEach(button => {
+            button.addEventListener('mouseover', () => {
+                button.style.transform = 'scale(0.95)';
+                button.style.boxShadow = '0 0 10px #4d664d';
+                currentButton = button.id;
+                var label = document.getElementById('label-' + currentButton);
+                var labelBox = document.getElementById('label-box-' + currentButton);
+                labelBox.style.height = '100px';
+                label.innerHTML = labels[label.id];
+            });
+            button.addEventListener('mouseout', () => {
+                button.style.transform = 'scale(1)';
+                button.style.boxShadow = 'none';
+                var labelBox = document.getElementById('label-box-' + button.id);
+                labelBox.style.height = '20px';
+                limitTextLength();
+            });
+        });
+
+        function gameLoop() {
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        limitTextLength();
+        gameLoop();
+
+    </script>
+
+    </html>
