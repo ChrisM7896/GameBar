@@ -1,0 +1,321 @@
+<%- include('../../partials/header') %>
+    <style>
+        canvas {
+            display: flex;
+            width: 600px;
+            height: 600px;
+            border-radius: 2%;
+        }
+
+        #canvas {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #difficultyScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #mapScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        h1 {
+            text-align: center;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="canvas">
+        <canvas>
+
+        </canvas>
+    </div>
+    <h1>
+        <div id="score">Score: 0 </div> <br>
+        <div id="time">Time: 0 </div>
+    </h1>
+</body>
+<script>
+    /*Stylistic choices and project manager critiques
+    - The player can turn the snake around quick enough to cause it to run into itself
+    - The map is a singular color and should be adjusted to a checkered map
+    - The fruit spawn can be slow and takes a while to find a valid spawn
+    - Graphics are very basic and can be improved with better colors, textures, and animations
+    MVP is complete, but there are many improvements that can be made to make the game more enjoyable and visually appealing.
+    */
+
+
+    // Map Variables || To be adjusted when making map board
+    let spaceSize = 20;
+    let rows = 20;
+    let columns = 20;
+
+    // Access the canvas and set its dimensions
+    const canvas = document.querySelector("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = spaceSize * columns;
+    canvas.height = spaceSize * rows;
+
+    // Function to draw the checkered map
+    function drawCheckeredMap() {
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < columns; col++) {
+                // Alternate colors based on row and column indices
+                context.fillStyle = (row + col) % 2 === 0 ? "#4d664d" : "#172222";
+                context.fillRect(col * spaceSize, row * spaceSize, spaceSize, spaceSize);
+            }
+        }
+    }
+
+    drawCheckeredMap();
+
+    // Player spawn
+    let playerX = spaceSize * Math.round(rows * 0.25);
+    let playerY = spaceSize * Math.round(columns * 0.5 - 1);
+    // Food spawn ahead of player 
+    let foodX = spaceSize * (rows * 0.75);
+    let foodY = spaceSize * (columns * 0.5 - 1);
+    let speedX = 0; // Speed of snake in x coordinate
+    let speedY = 0; // Speed of snake in y coordinate
+    let startSize = 0; // Variable to start with 5 body segments
+    let playerBody = []; // Body segment stuff
+
+    // Game Variables
+    let gameOver = false;
+    let started = false;
+    let points = 0;
+    let gameStarted = false;
+    let gameWin = false;
+
+    // Set Map size || Only 20x20 for MVP; adjust variables for different sizes; Change rows/column and spawn variables for different sizes 
+
+
+    // Description + Instructions 
+    let mapScreen = document.createElement("div");
+    mapScreen.id = "mapScreen";
+    mapScreen.innerHTML = `
+        <h1>What size map would you like?</h1>
+    
+        <button onclick="mapShift(16)">Small</button>
+        <button onclick="mapShift(20)">Medium</button>
+        <button onclick="mapShift(24)">Large</button>
+        <button onclick="mapShift(30)">X-tra large</button>
+        `;
+
+    document.body.appendChild(mapScreen);
+
+    // Set Difficulty
+    let difficultyScreen = document.createElement("div");
+    difficultyScreen.id = "difficultyScreen";
+    difficultyScreen.innerHTML = `
+        <h1>Select Difficulty</h1>
+        <button onclick="startGame(1000)">TESTING</button>
+        <button onclick="startGame(200)">Easy</button>
+        <button onclick="startGame(125)">Normal</button>
+        <button onclick="startGame(91)">Hard</button>
+        <button onclick="startGame(67)">Impossible</button>
+        `;
+
+
+    const scoreText = document.getElementById("score");
+    const timeText = document.getElementById("time");
+
+    document.addEventListener("keydown", (e) => {
+        startTimer();
+        if ((e.key === "w" || e.key === "ArrowUp") && speedY !== 1) {
+            moveSnake(0, -1);
+        }
+        if ((e.key === "s" || e.key === "ArrowDown") && speedY !== -1) {
+            moveSnake(0, 1);
+        }
+        if ((e.key === "a" || e.key === "ArrowLeft") && speedX !== 1) {
+            moveSnake(-1, 0);
+        }
+        if ((e.key === "d" || e.key === "ArrowRight") && speedX !== -1) {
+            moveSnake(1, 0);
+        }
+    });
+
+    function mapShift(size) {
+        rows = size;
+        columns = size;
+        canvas.height = rows * spaceSize;
+        canvas.width = columns * spaceSize;
+        drawCheckeredMap();
+        mapScreen.remove();
+        document.body.appendChild(difficultyScreen);
+    }
+
+    function startGame(speed) {
+        // Player spawn
+        let playerX = spaceSize * Math.round(rows * 0.25);
+        let playerY = spaceSize * Math.round(columns * 0.5 - 1);
+        // Food spawn ahead of player 
+        let foodX = spaceSize * (rows * 0.75);
+        let foodY = spaceSize * (columns * 0.5 - 1);
+        difficultyScreen.remove();
+        gameInterval = setInterval(gameUpdate, speed);
+    }
+
+    // Stops stuff from spawning in other things
+    function isValidPosition(x, y, checkFood = false) {
+        // Check player position
+        if (x === playerX && y === playerY) return false;
+
+        // Check snake body
+        for (let segment of playerBody) {
+            if (x === segment[0] && y === segment[1]) return false;
+        }
+
+        // Check food if needed
+        if (checkFood && x === foodX && y === foodY) return false;
+
+        return true;
+    }
+
+    function gameUpdate() {
+        if (gameOver) {
+            context.fillStyle = "rgba(0, 0, 0, 0.8)";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = "#ffffff";
+            context.font = "bold 32px Arial";
+            context.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
+            clearInterval(gameInterval);
+            clearInterval(timeInterval);
+            return;
+        }
+
+        if (gameWin) {
+            context.fillStyle = "rgba(0, 0, 0, 0.8)";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = "#ffffff";
+            context.font = "bold 32px Arial";
+            context.fillText("You Win!", canvas.width / 2 - 75, canvas.height / 2);
+            clearInterval(gameInterval);
+            clearInterval(timeInterval);
+            return;
+        }
+
+        drawCheckeredMap();
+
+        // Draw the fruit
+        context.fillStyle = "#ff0000"; // Red color for the fruit
+        context.fillRect(foodX, foodY, spaceSize, spaceSize);
+
+        // Check if the snake eats the fruit
+        if (playerX === foodX && playerY === foodY) {
+            scoreText.innerHTML = "Score: " + ++points;
+            playerBody.push([foodX, foodY]); // Add a new segment to the snake
+            let validPosition = false;
+            while (!validPosition) {
+                foodX = Math.floor(Math.random() * rows) * spaceSize;
+                foodY = Math.floor(Math.random() * columns) * spaceSize;
+                validPosition = isValidPosition(foodX, foodY);
+            }
+        }
+
+        let nextX = playerX + speedX * spaceSize;
+        let nextY = playerY + speedY * spaceSize;
+
+        // Check for collisions with walls
+        if (nextX < 0 || nextX >= rows * spaceSize || nextY < 0 || nextY >= columns * spaceSize) {
+            death();
+            return;
+        }
+
+        // Check for collisions with the snake's body
+        for (let i = 0; i < playerBody.length; i++) {
+            if (nextX === playerBody[i][0] && nextY === playerBody[i][1]) {
+                death();
+                return;
+            }
+        }
+
+        // Update the snake's body segments
+        for (let i = playerBody.length - 1; i > 0; i--) {
+            console.log(playerBody)
+            playerBody[i] = playerBody[i - 1]; // Shift each segment to the position of the previous one
+        }
+
+        // Update the head of the snake
+        if (playerBody.length) {
+            playerBody[0] = [playerX, playerY];
+        }
+
+        // Update player position
+        playerX = nextX;
+        playerY = nextY;
+
+        // Draw the snake
+        context.fillStyle = "#00ff00"; // Green color for the snake
+        for (let i = 0; i < playerBody.length; i++) {
+            context.fillRect(playerBody[i][0], playerBody[i][1], spaceSize, spaceSize);
+        }
+
+        // Draw the snake's head
+        context.fillStyle = "#00BB00"; // Darker green for the head
+        context.fillRect(playerX, playerY, spaceSize, spaceSize);
+
+        if (playerBody.length > rows * columns - 2) {
+            gameWin = true;
+        }
+    }
+
+    function moveSnake(x, y) {
+        speedX = x;
+        speedY = y;
+        // Makes it so the player starts with 5 body segments
+        while (playerBody.length < 4) {
+            playerBody.push(playerX, playerY);
+        }
+    }
+
+    function startTimer() {
+        if (!started) {
+            timeInterval = setInterval(() => {
+                let currentTime = parseInt(timeText.innerHTML.split(" ")[1]);
+                timeText.innerHTML = "Time: " + (currentTime + 1);
+            }, 1000)
+            started = true
+        };
+    }
+
+    // Function to handle player death
+    function death() {
+        gameOver = true;
+    }
+</script>
+
+</html>
