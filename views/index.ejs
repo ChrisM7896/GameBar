@@ -81,8 +81,7 @@
                 <img class="button-images" src=index/wip.png>
             </button><br>
 
-            <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">Virtual
-                    Pet</span></div>
+            <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">Virtual Pet</span></div>
         </div>
 
         <!-- BUTTON TWO || 2048 -->
@@ -111,8 +110,7 @@
                 <img class="button-images" src=index/postponed.png>
             </button><br>
 
-            <div id='label-box-button-4' class="label-box"><span id='label-button-4'
-                    class="game-labels">Minesweeper</span></div>
+            <div id='label-box-button-4' class="label-box"><span id='label-button-4' class="game-labels">Minesweeper</span></div>
         </div>
 
         <!-- BUTTON FIVE || Pac-Man -->
@@ -131,8 +129,7 @@
                 <img class="button-images" src=index/postponed.png>
             </button><br>
 
-            <div id='label-box-button-6' class="label-box"><span id='label-button-6' class="game-labels">Rock, Paper,
-                    Scissors</span></div>
+            <div id='label-box-button-6' class="label-box"><span id='label-button-6' class="game-labels">Rock, Paper, Scissors</span></div>
         </div>
 
         <!-- BUTTON SEVEN || Tic Tac Toe -->
@@ -141,8 +138,7 @@
                 <img class="button-images" src=index/postponed.png>
             </button><br>
 
-            <div id='label-box-button-7' class="label-box"><span id='label-button-7' class="game-labels">Tic Tac
-                    Toe</span></div>
+            <div id='label-box-button-7' class="label-box"><span id='label-button-7' class="game-labels">Tic Tac Toe</span></div>
         </div>
 
         <!-- BUTTON EIGHT || Stack -->
@@ -171,7 +167,7 @@
 
         function limitTextLength(text, maxLength) {
             Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-                if (label.textContent.length >= 15) {
+                if (label.textContent.length >= 18) {
                     var fullText = label.innerHTML;
                     label.innerHTML = fullText.substring(0, 15) + '...';
                 }

@@ -15,11 +15,176 @@
                 right: 840px;
                 top: 29px;
             }
+
+            #play2048 {
+                width: 150px;
+                height: 50px;
+                object-position: center;
+            }
+
+            #play2048 {
+                background-color: #172222;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                cursor: pointer;
+                overflow: hidden;
+                color: #4d664d;
+                text-shadow: 2px 2px 3px rgb(13, 71, 71);
+                font-weight: bold;
+                font-size: 1.2em;
+            }
+
+            #descField,
+            #guideField {
+                height: 750px;
+                width: 20%;
+                margin: 10px;
+                padding: 10px;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                background-color: #0f0f0f;
+                box-shadow: 0px 0px 20px rgb(13, 71, 71);
+                color: #4d664d;
+            }
+
+            #descField,
+            #guideField,
+            #middleGround {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .summaries {
+                color: #4d664d;
+                font-size: 1.5em;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            .changelog-header {
+                font-size: 1.2em;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+
+            .innerli {
+                margin-left: 25px;
+                font-size: 0.9em;
+            }
+
+            #signature {
+                font-size: 0.8em;
+                font-style: italic;
+            }
+
+            #guideField {
+                float: right;
+            }
+
+            .tileImgs {
+                width: 30px;
+                height: 30px;
+                margin: 2px;
+            }
+
+            h3 {
+                margin-bottom: 5px
+            }
+
+            #middleBox {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+            }
         </style>
     </head>
 
     <body>
-        <button id="2048play" onclick="window.location.href='/game_2048'">Play</button>
+        <!-- Description + Changelog -->
+        <div id="descField">
+            <h2>Description</h2>
+            <p>Based on the classic computer game, players must shift tiles with different numbers, combining like
+                numbers with the goal of reaching a 2048 tile. <br><br>This project originally began as a solo venture,
+                separate from GameBar, but as work piled up and GameBar was founded, it was just natural to include it.
+                It was then completed, themed around GameBar, and is the first completed GameBar game.<br><br>
+            <p id="signature">Developer: Christian Martin</p>
+            </p>
+            <details>
+                <summary class="summaries">Changelog</summary>
+                <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <div class="changelog-header">v1.0.0 - 2048 Released - 2/06/2026</div>
+                <li class="innerli">Initial release of 2048 on Gamebar (No documented development updates)</li>
+                <div class="changelog-header">v1.1.0 - Game Page Added - 2/12/2026</div>
+                <li class="innerli">Created 2048 game page with description, changelog, and game info, rules, etc.</li>
+            </details>
+        </div>
+
+
+        <!-- Middleground -->
+        <div id="middleGround">
+            <div id="middleBox">
+                <h1>2048</h1>
+                <img src="/2048/2048preview.png" alt="2048 Logo" height="500"><br><br>
+                <button id="play2048" onclick="window.location.href='/game_2048'">Play</button>
+            </div>
+        </div>
+
+
+        <!-- Guide -->
+        <div id="guideField">
+            <h2>Guide</h2>
+            <p>Use the arrow keys to move the tiles. When two tiles with the same number touch, they merge into a
+                greater one! The goal is to create a tile with the number 2048. Be careful, though: if the board fills
+                up and you can't make any more moves, it's game over!</p>
+            <br><br><br><br><br><br><br>
+            <details>
+                <summary class="summaries">Specifics</summary>
+                <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Keybinds:</h3>
+                <li class="innerli">[▲] 'ArrowUp' - Move tiles up</li>
+                <li class="innerli">[▼] 'ArrowDown' - Move tiles down</li>
+                <li class="innerli">[◄] 'ArrowLeft' - Move tiles left</li>
+                <li class="innerli">[►] 'ArrowRight' - Move tiles right</li>
+
+                <h3>Tiles:</h3>
+                <img src="/2048/square_2.png" class="tileImgs"><img src="/2048/square_4.png" class="tileImgs"><img
+                    src="/2048/square_8.png" class="tileImgs"><img src="/2048/square_16.png" class="tileImgs"><img
+                    src="/2048/square_32.png" class="tileImgs"><img src="/2048/square_64.png" class="tileImgs"><img
+                    src="/2048/square_128.png" class="tileImgs"><img src="/2048/square_256.png" class="tileImgs"><img
+                    src="/2048/square_512.png" class="tileImgs"><img src="/2048/square_1024.png" class="tileImgs"><img
+                    src="/2048/square_2048.png" class="tileImgs">
+
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Upon start: Game loop begins, canvas is drawn and redrawn every frame (background,
+                    tiles, and lines)</li>
+                <li class="innerli">Singular tile spawns onload; Either a 2 (90%) or a 4 (10%). All spawn logic follows
+                    this rule</li>
+                <li class="innerli">On keypress: Detects if Arrow key. If true, moves tiles as far as possible in that
+                    direction, and combines if it collides with a like tile. New tile is subsequently spawned.</li>
+                <li class="innerli">Game then checks for Win or Loss. If either is true, overlay is drawn accordingly.
+                </li>
+
+
+
+            </details>
+        </div>
+
+
+
     </body>
+
+    <script>
+        // BUTTON HOVER EFFECT ↓↓↓
+        let button = document.getElementById('play2048');
+        button.addEventListener('mouseover', () => {
+            button.style.transform = 'scale(0.95)';
+            button.style.boxShadow = '0 0 10px #4d664d';
+        });
+        button.addEventListener('mouseout', () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = 'none';
+        });
+    </script>
 
     </html>
