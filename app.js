@@ -83,7 +83,7 @@ app.get('/page_2048', isAuthenticated, (req, res) => {
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
-    res.render('games/2048/game_2048', { user: req.session.user, pageName: '2048', version: 'v1.1.0' });
+    res.render('games/2048/game_2048', { user: req.session.user, pageName: '2048', version: 'v1.1.1' });
 });
 
 app.get('/logout', (req, res) => {

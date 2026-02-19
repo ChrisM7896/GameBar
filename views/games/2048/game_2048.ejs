@@ -119,7 +119,49 @@
                     value: spawnValue,
                     image: findImage(spawnValue)
                 };
-                return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#172222";
+            ctx.fillRect(0, 0, 600, 600);
+            ctx.strokeStyle = "#4d664d";
+            ctx.lineWidth = 7;
+
+            Object.values(squares).forEach(element => {
+                if (element.pos[0] === -150 && element.pos[1] === -150) {
+                    return;
+                } else {
+                    ctx.drawImage(element.image, element.pos[0], element.pos[1], 150, 150);
+                }
+            });
+
+            for (let i = 0; i <= 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 150, 0);
+                ctx.lineTo(i * 150, 600);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * 150);
+                ctx.lineTo(600, i * 150);
+                ctx.stroke();
+            }
+
+            if (gameWin) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 48px Arial";
+                ctx.fillText("You Win!", 180, 300);
+            } else if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 48px Arial";
+                ctx.fillText("Game Over", 180, 300);
+            }
+            
+            return;
             }
         }
 
@@ -368,55 +410,6 @@
             return moved;
         }
 
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#172222";
-            ctx.fillRect(0, 0, 600, 600);
-            ctx.strokeStyle = "#4d664d";
-            ctx.lineWidth = 7;
-
-            Object.values(squares).forEach(element => {
-                if (element.pos[0] === -150 && element.pos[1] === -150) {
-                    return;
-                } else {
-                    ctx.drawImage(element.image, element.pos[0], element.pos[1], 150, 150);
-                }
-            });
-
-            for (let i = 0; i <= 4; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * 150, 0);
-                ctx.lineTo(i * 150, 600);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(0, i * 150);
-                ctx.lineTo(600, i * 150);
-                ctx.stroke();
-            }
-
-            if (gameWin) {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 48px Arial";
-                ctx.fillText("You Win!", 180, 300);
-                return;
-            } else if (gameOver) {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 48px Arial";
-                ctx.fillText("Game Over", 180, 300);
-                return;
-            }
-
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
 
     </script>
 
