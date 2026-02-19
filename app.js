@@ -20,7 +20,7 @@ const db = new sqlite3.Database('./db/app.db', (err) => {
 // CONSTANTS
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
-const AUTH_URL = process.env.AUTH_URL || 'http://localhost:420/oauth';
+const AUTH_URL = process.env.AUTH_URL || 'https://formbeta.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || `http://localhost:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
 
@@ -51,7 +51,11 @@ const socket = io(AUTH_URL, {
 
 // ROUTES
 app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user });
+    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
+});
+
+app.get('/changes', isAuthenticated, (req, res) => {
+    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
 });
 
 app.get('/login', (req, res) => {
@@ -72,6 +76,14 @@ app.get('/login', (req, res) => {
     } else {
         res.redirect(`${AUTH_URL}/oauth?redirectURL=${THIS_URL}`);
     };
+});
+
+app.get('/page_2048', isAuthenticated, (req, res) => {
+    res.render('games/2048/page_2048', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
+});
+
+app.get('/game_2048', isAuthenticated, (req, res) => {
+    res.render('games/2048/game_2048', { user: req.session.user, pageName: '2048', version: 'v1.1.0' });
 });
 
 app.get('/logout', (req, res) => {

@@ -1,65 +1,226 @@
 <%- include('partials/header') %>
-<head>
-    <style>
-        .game-button {
-            width: 150px;
-            height: 150px;
-            background-color: rgb(23, 34, 34);
-            border: solid 1px #4d664d;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .game-labels {
-            margin-top: 10px;
-            width: 150px;
-        }
-        .button-divs {
-            text-align: center;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-    <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">But what happens if the label is really long?</span>
-    </div>
-    <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">WIP</span>
-    </div>
-    <div class="button-divs">
-        <button class="game-button"></button><br><span class="game-labels">WIP</span>
-    </div>
-</body>
-<script>
-    /*
-        To Do:
-        - Button label character limit ✅
-        - Hover effects for buttons:
-            - Shrink a few pixels ✅
-            - Glow effect ✅
-            - Full label visibility
-        - Button functionality:
-            - Open game pages
-    */
 
-    Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-        if (label.textContent.length >= 12) {
-            var fullText = label.innerHTML;
-            label.innerHTML = fullText.substring(0, 12) + '...';
-        }
-    });
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/index/favicon.png';
+        document.head.appendChild(link);
+    </script>
 
-    Array.from(document.getElementsByClassName('game-button')).forEach(button => {
-        button.addEventListener('mouseover', () => {
-            button.style.transform = 'scale(0.95)';
-            button.style.boxShadow = '0 0 10px #4d664d';
+    <head>
+        <title>Gamebar - Home</title>
+        <style>
+            .game-button {
+                width: 150px;
+                height: 150px;
+                background-color: #172222;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 5px;
+                padding: 0px;
+                overflow: hidden;
+            }
+
+            .game-labels {
+                background-color: #0f0f0f;
+            }
+
+            .label-box {
+                width: 155px;
+                overflow: hidden;
+                height: 20px;
+                text-align: center;
+                position: absolute;
+            }
+
+            .button-divs {
+                display: inline-block;
+            }
+
+            .button-images {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 5px;
+                pointer-events: none;
+                display: block;
+            }
+
+            #changelog {
+                width: 80px;
+                height: 80px;
+                border: solid 2px #4d664d;
+                border-radius: 40px;
+            }
+
+            #changelog img {
+                width: 80px;
+                height: 80px;
+            }
+
+            #changelog-button-div {
+                position: absolute;
+                bottom: 30px;
+                left: 20px;
+            }
+
+            #partials-header-version {
+                right: 840px;
+                top: 29px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        
+        <!-- BUTTON ONE || 2048 -->
+        <div class="button-divs">
+            <button id='button-1' class="game-button" onclick="location.href='/page_2048'">
+                <img class="button-images" src=2048/logo2048.png>
+            </button><br>
+            
+            <div id='label-box-button-1' class="label-box"><span id='label-button-1' class="game-labels">2048</span>
+            </div>
+        </div>
+
+        <!-- BUTTON TWO || Virtual Pet -->
+        <div class="button-divs">
+            <button id='button-2' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-2' class="label-box"><span id='label-button-2' class="game-labels">Virtual Pet</span></div>
+        </div>
+
+        <!-- BUTTON THREE || Snake -->
+        <div class="button-divs">
+            <button id='button-3' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-3' class="label-box"><span id='label-button-3' class="game-labels">Snake</span>
+            </div>
+        </div>
+
+        <!-- BUTTON FOUR || Minesweeper -->
+        <div class="button-divs">
+            <button id='button-4' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-4' class="label-box"><span id='label-button-4' class="game-labels">Minesweeper</span></div>
+        </div>
+
+        <!-- BUTTON FIVE || Pac-Man -->
+        <div class="button-divs">
+            <button id='button-5' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-5' class="label-box"><span id='label-button-5' class="game-labels">Pac-Man</span>
+            </div>
+        </div>
+
+        <!-- BUTTON SIX || Rock, Paper, Scissors -->
+        <div class="button-divs">
+            <button id='button-6' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-6' class="label-box"><span id='label-button-6' class="game-labels">Rock, Paper, Scissors</span></div>
+        </div>
+
+        <!-- BUTTON SEVEN || Tic Tac Toe -->
+        <div class="button-divs">
+            <button id='button-7' class="game-button">
+                <img class="button-images" src=index/postponed.png>
+            </button><br>
+
+            <div id='label-box-button-7' class="label-box"><span id='label-button-7' class="game-labels">Tic Tac Toe</span></div>
+        </div>
+
+        <!-- BUTTON EIGHT || Stack -->
+        <div class="button-divs">
+            <button id='button-8' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-8' class="label-box"><span id='label-button-8' class="game-labels">Stack</span>
+            </div>
+        </div>
+
+        <!-- BUTTON NINE || Solitaire -->
+        <div class="button-divs">
+            <button id='button-9' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-9' class="label-box"><span id='label-button-9' class="game-labels">Solitaire</span>
+            </div>
+        </div>
+
+        <!-- BUTTON TEN || Alchemy -->
+        <div class="button-divs">
+            <button id='button-10' class="game-button">
+                <img class="button-images" src=index/wip.png>
+            </button><br>
+
+            <div id='label-box-button-10' class="label-box"><span id='label-button-10' class="game-labels">Alchemy</span></div>
+        </div>
+
+        <!-- CHANGELOG BUTTON -->
+        <div id="changelog-button-div">
+            <button class="game-button" id="changelog" onclick="location.href='/changes'"><img
+                    src="index/file.png"></button>
+        </div>
+
+    </body>
+    <script>
+        var labels = {}
+        Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+            labelText = label.innerHTML;
+            labels[label.id] = labelText;
         });
-        button.addEventListener('mouseout', () => {
-            button.style.transform = 'scale(1)';
-            button.style.boxShadow = 'none';
-        });
-    });
 
-</script>
-<%- include('partials/footer') %>
+        function limitTextLength(text, maxLength) {
+            Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
+                if (label.textContent.length >= 18) {
+                    var fullText = label.innerHTML;
+                    label.innerHTML = fullText.substring(0, 15) + '...';
+                }
+            });
+        }
+
+        Array.from(document.getElementsByClassName('game-button')).forEach(button => {
+            button.addEventListener('mouseover', () => {
+                button.style.transform = 'scale(0.95)';
+                button.style.boxShadow = '0 0 10px #4d664d';
+                currentButton = button.id;
+                var label = document.getElementById('label-' + currentButton);
+                var labelBox = document.getElementById('label-box-' + currentButton);
+                labelBox.style.height = '100px';
+                label.innerHTML = labels[label.id];
+            });
+            button.addEventListener('mouseout', () => {
+                button.style.transform = 'scale(1)';
+                button.style.boxShadow = 'none';
+                var labelBox = document.getElementById('label-box-' + button.id);
+                labelBox.style.height = '20px';
+                limitTextLength();
+            });
+        });
+
+        function gameLoop() {
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        limitTextLength();
+        gameLoop();
+
+    </script>
+
+    </html>

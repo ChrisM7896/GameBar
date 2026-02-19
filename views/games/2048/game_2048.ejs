@@ -1,0 +1,423 @@
+<%- include('../../partials/header') %>
+
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/2048/logo2048.png';
+        document.head.appendChild(link);
+    </script>
+    
+    <title>2048</title>
+    <style>
+        #partials-header-version {
+            right: 875px;
+            top: 29px;
+        }
+
+        #gameBody {
+            text-align: center;
+        }
+    </style>
+    </head>
+
+    <body>
+        <div id="gameBody">
+            <canvas id="gameCanvas" width="600" height="600" style="border:3px solid #000000;"></canvas>
+            <br>Do not refresh, you will be softlocked.
+        </div>
+    </body>
+    <script>
+        // VARIABLES ↓↓↓
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const sq2 = new Image(); sq2.src = './2048/square_2.png';
+        const sq4 = new Image(); sq4.src = './2048/square_4.png';
+        const sq8 = new Image(); sq8.src = './2048/square_8.png';
+        const sq16 = new Image(); sq16.src = './2048/square_16.png';
+        const sq32 = new Image(); sq32.src = './2048/square_32.png';
+        const sq64 = new Image(); sq64.src = './2048/square_64.png';
+        const sq128 = new Image(); sq128.src = './2048/square_128.png';
+        const sq256 = new Image(); sq256.src = './2048/square_256.png';
+        const sq512 = new Image(); sq512.src = './2048/square_512.png';
+        const sq1024 = new Image(); sq1024.src = './2048/square_1024.png';
+        const sq2048 = new Image(); sq2048.src = './2048/square_2048.png';
+        var gameOver = false;
+        var gameWin = false;
+
+        var keydown = false;
+        var keyup = true;
+
+        var squares =
+        {
+            // PLACEHOLDER SQUARE ↓↓↓
+            // square_x: {
+            //     pos: ['x', 'y'],
+            //     value: undefined,
+            //     image: findImage()
+            // }
+        };
+
+        // FUNCTIONS ↓↓↓
+
+        // Finds and returns the image corresponding to the square value
+        function findImage(value) {
+            switch (value) {
+                case 2:
+                    return sq2;
+                case 4:
+                    return sq4;
+                case 8:
+                    return sq8;
+                case 16:
+                    return sq16;
+                case 32:
+                    return sq32;
+                case 64:
+                    return sq64;
+                case 128:
+                    return sq128;
+                case 256:
+                    return sq256;
+                case 512:
+                    return sq512;
+                case 1024:
+                    return sq1024;
+                case 2048:
+                    return sq2048;
+                default:
+                    return null;
+            }
+        }
+
+        // Gets the position for spawning a new square
+        function getPos() {
+            let x = Math.floor(Math.random() * 4) * 150;
+            let y = Math.floor(Math.random() * 4) * 150;
+            return [x, y];
+        }
+
+        // Spawns a new square at a random position, with either a value of 2 or 4 (10%)
+        function spawn() {
+            let returnVariable = false;
+            let pos = getPos();
+            Object.keys(squares).forEach(e => {
+                if (squares[e].pos[0] == pos[0] && squares[e].pos[1] == pos[1]) {
+                    spawn();
+                    returnVariable = true;
+                }
+            });
+
+            if (returnVariable) {
+                return;
+            } else {
+                let spawnValue = Math.random() < 0.9 ? 2 : 4;
+                let sqName = 'square_' + (Object.keys(squares).length + 1);
+                squares[sqName] = {
+                    pos: [pos[0], pos[1]],
+                    value: spawnValue,
+                    image: findImage(spawnValue)
+                };
+                return;
+            }
+        }
+
+        // EVENT LISTENERS ↓↓↓
+        window.onload = function () {
+            // Spawns a square on start
+            spawn();
+            console.log('Game started');
+        };
+
+        // Detects if a key is being pressed
+        window.addEventListener('keydown', function (event) {
+            keydown = true;
+            keyup = false;
+
+        });
+
+        // Detects if a key is released, and moves squares accordingly
+        window.addEventListener('keyup', function (event) {
+            var moved;
+            if (!keyup && keydown) {
+
+                switch (event.key) {
+                    case 'ArrowUp':
+                        moved = up(moved);
+                        if (moved == true) {
+                            spawn();
+                        };
+                        break;
+                    case 'ArrowDown':
+                        moved = down(moved);
+                        if (moved == true) {
+                            spawn();
+                        };
+                        break;
+                    case 'ArrowLeft':
+                        moved = left(moved);
+                        if (moved == true) {
+                            spawn();
+                        };
+                        break;
+                    case 'ArrowRight':
+                        moved = right(moved);
+                        if (moved == true) {
+                            spawn();
+                        };
+                        break;
+                    default:
+                        break;
+                };
+            }
+
+            keydown = false;
+            keyup = true;
+
+            Object.keys(squares).forEach(key => {
+                if (squares[key].value === 2048) {
+                    gameWin = true;
+                    return;
+                }
+            });
+
+            // GAME OVER CHECK ↓↓↓
+            let canMove = false;
+            let tempPosArray = [];
+            Object.keys(squares).forEach(k => {
+                tempPosArray.push(squares[k].pos);
+            });
+            for (let x = 0; x <= 450; x += 150) {
+                for (let y = 0; y <= 450; y += 150) {
+                    if (!tempPosArray.some(pos => pos[0] === x && pos[1] === y)) {
+                        canMove = true;
+                    } else {
+                        const currentSquare = Object.values(squares).find(sq => sq.pos[0] === x && sq.pos[1] === y);
+                        // Check right
+                        if (x < 450) {
+                            const rightSquare = Object.values(squares).find(sq => sq.pos[0] === x + 150 && sq.pos[1] === y);
+                            if (rightSquare && rightSquare.value === currentSquare.value) {
+                                canMove = true;
+                            }
+                        }
+                        // Check down
+                        if (y < 450) {
+                            const downSquare = Object.values(squares).find(sq => sq.pos[0] === x && sq.pos[1] === y + 150);
+                            if (downSquare && downSquare.value === currentSquare.value) {
+                                canMove = true;
+                            }
+                        }
+                        // Check left
+                        if (x > 0) {
+                            const leftSquare = Object.values(squares).find(sq => sq.pos[0] === x - 150 && sq.pos[1] === y);
+                            if (leftSquare && leftSquare.value === currentSquare.value) {
+                                canMove = true;
+                            }
+                        }
+                        // Check up
+                        if (y > 0) {
+                            const upSquare = Object.values(squares).find(sq => sq.pos[0] === x && sq.pos[1] === y - 150);
+                            if (upSquare && upSquare.value === currentSquare.value) {
+                                canMove = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!canMove) {
+                gameOver = true;
+                return;
+            }
+        });
+
+        // MOVEMENT LOGIC FUNCTIONS ↓↓↓
+        function up(moved) {
+            let stillMoving = true;
+            while (stillMoving) {
+                stillMoving = false;
+                Object.keys(squares).forEach(key => {
+                    if (squares[key].pos[0] === -150 && squares[key].pos[1] === -150) {
+                        return;
+                    }
+                    let tempPosArray = [];
+                    Object.keys(squares).forEach(k => {
+                        tempPosArray.push(squares[k].pos);
+                    });
+                    let e = squares[key].pos;
+                    if (e[1] > 0 && !tempPosArray.some(pos => pos[0] === e[0] && pos[1] === e[1] - 150)) {
+                        squares[key].pos[1] -= 150;
+                        moved = true;
+                        stillMoving = true;
+                    } else if (tempPosArray.some(pos => pos[0] === e[0] && pos[1] === e[1] - 150)) {
+                        const aboveSquare = Object.values(squares).find(sq => sq.pos[0] === e[0] && sq.pos[1] === e[1] - 150);
+                        if (aboveSquare && aboveSquare.value === squares[key].value && aboveSquare.value !== null) {
+                            aboveSquare.value *= 2;
+                            aboveSquare.image = findImage(aboveSquare.value);
+                            squares[key].value = null;
+                            squares[key].image = null;
+                            squares[key].pos = [-150, -150];
+                            moved = true;
+                            stillMoving = true;
+                        }
+                    }
+                });
+            }
+            return moved;
+        }
+
+        function down(moved) {
+            let stillMoving = true;
+            while (stillMoving) {
+                stillMoving = false;
+                Object.keys(squares).forEach(key => {
+                    if (squares[key].pos[0] === -150 && squares[key].pos[1] === -150) {
+                        return;
+                    }
+                    let tempPosArray = [];
+                    Object.keys(squares).forEach(k => {
+                        tempPosArray.push(squares[k].pos);
+                    });
+                    let e = squares[key].pos;
+                    if (e[1] < 450 && !tempPosArray.some(pos => pos[0] === e[0] && pos[1] === e[1] + 150)) {
+                        squares[key].pos[1] += 150;
+                        moved = true;
+                        stillMoving = true;
+                    } else if (tempPosArray.some(pos => pos[0] === e[0] && pos[1] === e[1] + 150)) {
+                        const belowSquare = Object.values(squares).find(sq => sq.pos[0] === e[0] && sq.pos[1] === e[1] + 150);
+                        if (belowSquare && belowSquare.value === squares[key].value && belowSquare.value !== null) {
+                            belowSquare.value *= 2;
+                            belowSquare.image = findImage(belowSquare.value);
+                            squares[key].value = null;
+                            squares[key].image = null;
+                            squares[key].pos = [-150, -150];
+                            moved = true;
+                            stillMoving = true;
+                        }
+                    }
+                });
+            }
+            return moved;
+        }
+
+        function left(moved) {
+            let stillMoving = true;
+            while (stillMoving) {
+                stillMoving = false;
+                Object.keys(squares).forEach(key => {
+                    if (squares[key].pos[0] === -150 && squares[key].pos[1] === -150) {
+                        return;
+                    }
+                    let tempPosArray = [];
+                    Object.keys(squares).forEach(k => {
+                        tempPosArray.push(squares[k].pos);
+                    });
+                    let e = squares[key].pos;
+                    if (e[0] > 0 && !tempPosArray.some(pos => pos[0] === e[0] - 150 && pos[1] === e[1])) {
+                        squares[key].pos[0] -= 150;
+                        moved = true;
+                        stillMoving = true;
+                    } else if (tempPosArray.some(pos => pos[0] === e[0] - 150 && pos[1] === e[1])) {
+                        const leftSquare = Object.values(squares).find(sq => sq.pos[0] === e[0] - 150 && sq.pos[1] === e[1]);
+                        if (leftSquare && leftSquare.value === squares[key].value && leftSquare.value !== null) {
+                            leftSquare.value *= 2;
+                            leftSquare.image = findImage(leftSquare.value);
+                            squares[key].value = null;
+                            squares[key].image = null;
+                            squares[key].pos = [-150, -150];
+                            moved = true;
+                            stillMoving = true;
+                        }
+                    }
+                });
+            }
+            return moved;
+        }
+
+        function right(moved) {
+            let stillMoving = true;
+            while (stillMoving) {
+                stillMoving = false;
+                Object.keys(squares).forEach(key => {
+                    if (squares[key].pos[0] === -150 && squares[key].pos[1] === -150) {
+                        return;
+                    }
+                    let tempPosArray = [];
+                    Object.keys(squares).forEach(k => {
+                        tempPosArray.push(squares[k].pos);
+                    });
+                    let e = squares[key].pos;
+                    if (e[0] < 450 && !tempPosArray.some(pos => pos[0] === e[0] + 150 && pos[1] === e[1])) {
+                        squares[key].pos[0] += 150;
+                        moved = true;
+                        stillMoving = true;
+                    } else if (tempPosArray.some(pos => pos[0] === e[0] + 150 && pos[1] === e[1])) {
+                        const rightSquare = Object.values(squares).find(sq => sq.pos[0] === e[0] + 150 && sq.pos[1] === e[1]);
+                        if (rightSquare && rightSquare.value === squares[key].value && rightSquare.value !== null) {
+                            rightSquare.value *= 2;
+                            rightSquare.image = findImage(rightSquare.value);
+                            squares[key].value = null;
+                            squares[key].image = null;
+                            squares[key].pos = [-150, -150];
+                            moved = true;
+                            stillMoving = true;
+                        }
+                    }
+                });
+            }
+            return moved;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#172222";
+            ctx.fillRect(0, 0, 600, 600);
+            ctx.strokeStyle = "#4d664d";
+            ctx.lineWidth = 7;
+
+            Object.values(squares).forEach(element => {
+                if (element.pos[0] === -150 && element.pos[1] === -150) {
+                    return;
+                } else {
+                    ctx.drawImage(element.image, element.pos[0], element.pos[1], 150, 150);
+                }
+            });
+
+            for (let i = 0; i <= 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 150, 0);
+                ctx.lineTo(i * 150, 600);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * 150);
+                ctx.lineTo(600, i * 150);
+                ctx.stroke();
+            }
+
+            if (gameWin) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 48px Arial";
+                ctx.fillText("You Win!", 180, 300);
+                return;
+            } else if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 48px Arial";
+                ctx.fillText("Game Over", 180, 300);
+                return;
+            }
+
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+    </script>
+
+    </html>
