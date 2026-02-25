@@ -69,8 +69,6 @@
 </body>
 <script>
     /*Stylistic choices and project manager critiques
-    - The player can turn the snake around quick enough to cause it to run into itself
-    - The map is a singular color and should be adjusted to a checkered map
     - The fruit spawn can be slow and takes a while to find a valid spawn
     - Graphics are very basic and can be improved with better colors, textures, and animations
     MVP is complete, but there are many improvements that can be made to make the game more enjoyable and visually appealing.
@@ -101,16 +99,41 @@
 
     drawCheckeredMap();
 
-    // Player spawn
-    let playerX = spaceSize * Math.round(rows * 0.25);
-    let playerY = spaceSize * Math.round(columns * 0.5 - 1);
-    // Food spawn ahead of player 
-    let foodX = spaceSize * (rows * 0.75);
-    let foodY = spaceSize * (columns * 0.5 - 1);
+    // Player / Food spawn
+    let playerX;
+    let playerY;
+    let foodX;
+    let foodY;
     let speedX = 0; // Speed of snake in x coordinate
     let speedY = 0; // Speed of snake in y coordinate
     let startSize = 0; // Variable to start with 5 body segments
     let playerBody = []; // Body segment stuff
+
+    // Set starting food and player positions based on map size
+    function setInitialPositions() {
+        const centerCol = Math.floor(columns / 2);
+        const centerRow = Math.floor(rows / 2);
+        const quarter = Math.floor(columns / 4);
+
+        let snakeCol = centerCol - quarter;
+        let foodCol = centerCol + quarter;
+
+        if (snakeCol < 0) snakeCol = 0;
+        if (foodCol >= columns) foodCol = columns - 1;
+
+        if (snakeCol === foodCol) {
+            if (foodCol < columns - 1) foodCol++;
+            else if (snakeCol > 0) snakeCol--;
+        }
+
+        playerX = snakeCol * spaceSize;
+        playerY = centerRow * spaceSize;
+        foodX = foodCol * spaceSize;
+        foodY = centerRow * spaceSize;
+    }
+
+    // Set initial positions for the default map size
+    setInitialPositions();
 
     // Game Variables
     let gameOver = false;
@@ -118,6 +141,8 @@
     let points = 0;
     let gameStarted = false;
     let gameWin = false;
+    // Prevent multiple turns before the snake moves
+    let canTurn = true;
 
     // Set Map size || Only 20x20 for MVP; adjust variables for different sizes; Change rows/column and spawn variables for different sizes 
 
@@ -154,6 +179,9 @@
 
     document.addEventListener("keydown", (e) => {
         startTimer();
+        // Only allow one turn per game update tick
+        if (!canTurn) return;
+
         if ((e.key === "w" || e.key === "ArrowUp") && speedY !== 1) {
             moveSnake(0, -1);
         }
@@ -173,18 +201,15 @@
         columns = size;
         canvas.height = rows * spaceSize;
         canvas.width = columns * spaceSize;
+        setInitialPositions();
         drawCheckeredMap();
         mapScreen.remove();
         document.body.appendChild(difficultyScreen);
     }
 
     function startGame(speed) {
-        // Player spawn
-        let playerX = spaceSize * Math.round(rows * 0.25);
-        let playerY = spaceSize * Math.round(columns * 0.5 - 1);
-        // Food spawn ahead of player 
-        let foodX = spaceSize * (rows * 0.75);
-        let foodY = spaceSize * (columns * 0.5 - 1);
+        // Ensure spawns are set for the selected map size
+        setInitialPositions();
         difficultyScreen.remove();
         gameInterval = setInterval(gameUpdate, speed);
     }
@@ -291,11 +316,16 @@
         if (playerBody.length > rows * columns - 2) {
             gameWin = true;
         }
+
+        // Unlock turning for the next tick so the player can supply another input
+        canTurn = true;
     }
 
     function moveSnake(x, y) {
+        // Apply the direction and lock further turning until the next gameUpdate
         speedX = x;
         speedY = y;
+        canTurn = false;
         // Makes it so the player starts with 5 body segments
         while (playerBody.length < 4) {
             playerBody.push(playerX, playerY);
