@@ -51,11 +51,11 @@ const socket = io(AUTH_URL, {
 
 // ROUTES
 app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
+    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.7' });
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
+    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.7' });
 });
 
 app.get('/login', (req, res) => {
@@ -79,7 +79,7 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/page_2048', isAuthenticated, (req, res) => {
-    res.render('games/2048/page_2048', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.6' });
+    res.render('games/2048/page_2048', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.7' });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
