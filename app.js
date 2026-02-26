@@ -86,10 +86,6 @@ app.get('/game_2048', isAuthenticated, (req, res) => {
     res.render('games/2048/game_2048', { user: req.session.user, pageName: '2048', version: 'v1.0.0' });
 });
 
-app.get('/game_snake', isAuthenticated, (req, res) => {
-    res.render('games/snake/game_snake', { user: req.session.user, pageName: 'Gamebar', version: 'v0.1.4' });
-});
-
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
