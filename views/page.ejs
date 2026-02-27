@@ -1,0 +1,154 @@
+<%- include('partials/header') %>
+
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/index/favicon.png';
+        document.head.appendChild(link);
+    </script>
+
+    <head>
+        <title>Gamebar - <%- data.game %></title>
+        <style>
+            #partials-header-version {
+                right: 840px;
+                top: 29px;
+            }
+
+            #button {
+                width: 150px;
+                height: 50px;
+                object-position: center;
+                background-color: #172222;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                cursor: pointer;
+                overflow: hidden;
+                color: #4d664d;
+                text-shadow: 2px 2px 3px rgb(13, 71, 71);
+                font-weight: bold;
+                font-size: 1.2em;
+            }
+
+            #descField,
+            #guideField {
+                height: 750px;
+                width: 22%;
+                margin: 10px;
+                padding: 10px;
+                border: solid 1px #4d664d;
+                border-radius: 5px;
+                background-color: #0f0f0f;
+                box-shadow: 0px 0px 20px rgb(13, 71, 71);
+                color: #4d664d;
+                overflow-y: scroll;
+            }
+
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            #descField,
+            #guideField,
+            #middleGround {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .summaries {
+                color: #4d664d;
+                font-size: 1.5em;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            .changelog-header {
+                font-size: 1.2em;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+
+            .innerli {
+                margin-left: 25px;
+                font-size: 0.9em;
+            }
+
+            #signature {
+                font-size: 0.8em;
+                font-style: italic;
+            }
+
+            #guideField {
+                float: right;
+            }
+
+            .tileImgs {
+                width: 30px;
+                height: 30px;
+                margin: 2px;
+            }
+
+            h3 {
+                margin-bottom: 5px
+            }
+
+            #middleBox {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Description + Changelog -->
+        <div id="descField">
+            <h2>Description</h2>
+            <p><%- data.description %></p>
+            <br>
+            <br>
+            <p id="signature">Developer: <%- data.developer %></p>
+            <%- data.changelog %>
+        </div>
+
+
+        <!-- Middleground -->
+        <div id="middleGround">
+            <div id="middleBox">
+                <h1><%- data.game %></h1>
+                <%- data.preview %><br><br>
+                    <%- data.playButton %>
+            </div>
+        </div>
+
+
+        <!-- Guide -->
+        <div id="guideField">
+            <h2>Guide</h2>
+            <p><%- data.guide %></p>
+            <br><br><br><br><br><br><br>
+            <%- data.specifics %>
+
+
+        </div>
+
+
+
+    </body>
+
+    <script>
+        // BUTTON HOVER EFFECT ↓↓↓
+        let button = document.getElementById('button');
+        button.addEventListener('mouseover', () => {
+            button.style.transform = 'scale(0.95)';
+            button.style.boxShadow = '0 0 10px #4d664d';
+        });
+        button.addEventListener('mouseout', () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = 'none';
+        });
+    </script>
+
+    </html>
