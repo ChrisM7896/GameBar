@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet</title>
+    <link rel="stylesheet" href="/virtualPet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div id="title" class="header-item">
+            <h1>Virtual Pet</h1>
+        </div>
+
+        <div id="userInfo" class="header-item">
+            logged in as: <strong>
+                <%= displayName %>
+            </strong>
+        </div>
+        <button class="header-item" onclick="window.location.href='/logout'">
+            Logout
+        </button>
+    </header>
+    <div class="game-container">
+        <button onclick="toggleNewPetForm()">Make new pet</button>
+        <div id="newPetForm" style="display: none;">
+            <input type="text" id="petNameInput" placeholder="Pet Name">
+            <select id="petTypeSelect">
+                <option value="cat">Cat</option>
+                <option value="dog">Dog</option>
+                <option value="rabbit">Rabbit</option>
+                <option value="parrot">Parrot</option>
+                <option value="fish">Fish</option>
+            </select>
+            <button id="submitPetButton" onclick="submitPet()">Submit</button>
+        </div>
+
+        <% if (pets && pets.length> 0) { %>
+            <% pets.forEach(pet=> { %>
+                <div class="petCard">
+                    <% if (pet.status==1) { %>
+                        <br>
+                        <% if (pet.type=="cat" ) { %>
+                            <img src="./virtualPet/cat.png" alt="Cat Image (alive)" id="petImage-<%- pet.id %>">
+                            <% } else if (pet.type=="dog" ) { %>
+                                <img src="./virtualPet/dog.png" alt="Dog Image (alive)" id="petImage-<%- pet.id %>">
+                                <% } else if (pet.type=="rabbit" ) { %>
+                                    <img src="./virtualPet/rabbit.png" alt="Rabbit Image (alive)" id="petImage-<%- pet.id %>">
+                                    <% } else if (pet.type=="parrot" ) { %>
+                                        <img src="./virtualPet/parrot.png" alt="Parrot Image (alive)" id="petImage-<%- pet.id %>">
+                                        <% } else if (pet.type=="fish" ) { %>
+                                            <img src="./virtualPet/fish.png" alt="Fish Image (alive)" id="petImage-<%- pet.id %>">
+                                            <% } %>
+                                                <ul id="petName-<%- pet.id %>"><strong>Name:</strong>
+                                                    <%= pet.name %>
+                                                </ul>
+                                                <ul class='hunger bar' id='hunger-<%- pet.id %>'>
+                                                    <strong>Hunger:</strong>
+                                                    <%= pet.hunger %> / 100
+                                                </ul>
+                                                <ul class="mood bar" id='mood-<%- pet.id %>'><strong>Mood:</strong>
+                                                    <%= pet.mood %> / 100
+                                                </ul>
+                                                <ul id='petStatus-<%- pet.id %>'><strong>Status:</strong>
+                                                    <%= pet.status==1 ? "alive" : "dead" %>
+                                                </ul>
+                                                <button id="playButton-<%- pet.id %>">Play</button>
+                                                <button id="feedButton-<%- pet.id %>">Feed</button>
+                                                <% } else if (pet.status==0) { %>
+                                                    <br>
+                                                    <img src="./virtualPet/urn.png" alt="Pet Image (dead)"
+                                                        id="petImage-<%- pet.id %>">
+                                                    <ul id="petName-<%- pet.id %>"><strong>Name:</strong>
+                                                        <%= pet.name %>
+                                                    </ul>
+                                                    <% } %>
+                                                        <% }); %>
+                                                            <% } else { %>
+                                                                <ul>You don't have any pets yet.</ul>
+                </div>
+                <% } %>
+    </div>
+    <div id="game-log"></div>
+    <button id="resetButton">Reset Game</button>
+</body>
+<script>
+    /*
+    -------------------------------------
+    Declare Global variables 
+    -------------------------------------
+    declare petsData array to hold pet data fetched from server
+    initialize html elements as variables for easy access in functions
+    */
+
+    //global pet data, game loop, and timing variables
+    let petsData = [];
+    let gameLoopInterval = null;
+    let lastUpdateTime = Date.now();
+
+    //new pet form elements
+    const newPetForm = document.getElementById("newPetForm")
+    const newPetNameInput = document.getElementById("petNameInput")
+    const newPetTypeSelect = document.getElementById("petTypeSelect")
+
+    /*
+        -------------------------------------
+        Main Game Loop 
+        -------------------------------------
+        On page load:
+        - Fetch user's pet data from server
+        - Start game with fetched pet data
+        Then,
+        At the start of the game, for each pet:
+        - Start hunger decay interval
+        - Start mood decay interval
+        - Start status tracking interval
+        - Set up event listeners for user interactions (scritch, rename, play, feed)
+        */
+
+    window.onload = async () => {
+        petsData = await fetchPetData();
+        startGame(petsData);
+    }
+
+    function startGame(petsData) {
+        //initialize pet-specific data
+        petsData.forEach(pet => {
+            if (pet.status == 1) {
+                //initialize timing data for each stat
+                pet.lastHungerUpdate = Date.now();
+                pet.lastMoodUpdate = Date.now();
+                pet.lastSaveTime = Date.now();
+
+                //initialize rates if not set
+                pet.hungerRate = pet.hungerRate || 2000;
+                pet.moodRate = pet.moodRate || 3000;
+
+                const petImageElement = document.getElementById("petImage-" + pet.id);
+                const petNameElement = document.getElementById(`petName-${pet.id}`);
+                const playButton = document.getElementById("playButton-" + pet.id);
+                const feedButton = document.getElementById("feedButton-" + pet.id);
+
+                petImageElement.addEventListener('click', function () {
+                    scritch(pet)
+                });
+                petNameElement.addEventListener('click', function () {
+                    rename(pet)
+                });
+                playButton.addEventListener('click', function () {
+                    play(pet)
+                });
+                feedButton.addEventListener('click', function () {
+                    feed(pet)
+                });
+            };
+        });
+
+        //start main game loop for all pets
+        mainGameLoop();
+
+        //reset game button logic
+        const resetGameButton = document.getElementById("resetButton");
+        resetGameButton.addEventListener('click', function () {
+            if (confirm("Are you sure you want to reset the game? This will delete all your pets and their progress.")) {
+                resetGame();
+            } else {
+                alert("Game reset cancelled.");
+            }
+        });
+    };
+
+    /*
+    -------------------------------------
+    Server Communication Functions
+    -------------------------------------
+    1. fetchPetData - Fetches user's pet data from server
+    2. resetGame - Resets the game by removing user's pet data from server
+    3. toggleNewPetForm - toggles new pet form visibility
+    4. submitPet - on clicking the submit button in the visible newPetForm, submits new pet data to server
+    5. savePetData - Saves pet data to server
+    */
+
+    async function fetchPetData() {
+        try {
+            const response = await fetch('/getPetData', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                return data
+            } else {
+                console.error("Failed to fetch pet stats.");
+                return [];
+            }
+        } catch (error) {
+            console.error("An error occurred while fetching pet stats: " + error.message);
+            return [];
+        }
+    }
+
+    function resetGame() {
+        fetch('/resetGame', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error("Failed to reset game.");
+            }
+        }).catch(error => {
+            alert("An error occurred while resetting the game: " + error.message);
+        });
+    }
+
+    function toggleNewPetForm() {
+        if (newPetForm.style.display === "none") {
+            newPetForm.style.display = "block";
+        } else {
+            newPetForm.style.display = "none";
+        }
+    }
+
+    function submitPet() {
+        let newPetName = newPetNameInput.value.trim();
+        let newPetType = newPetTypeSelect.value;
+        if (!newPetName) {
+            alert("Pet name cannot be empty!");
+            return;
+        } else if (petsData.some(pet => pet.name.toLowerCase() === newPetName.toLowerCase())) {
+            alert("You already have a pet with that name! Please choose a different name.");
+            return;
+        }
+
+        //send new pet data to server
+        fetch('/createPet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newPetName, type: newPetType })
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Failed to create pet.");
+            }
+        }).then(data => {
+            //reload page to show new pet
+            window.location.reload();
+        }).catch(error => {
+            alert("An error occurred while creating the pet: " + error.message);
+        });
+        newPetForm.style.display = "none";
+    }
+
+    function savePetData(pet) {
+        fetch('/savePetData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ petName: pet.name, type: pet.type, hunger: pet.hunger, mood: pet.mood, status: pet.status })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to save pet data.");
+            }
+        }).catch(error => {
+            alert("An error occurred while saving pet data: " + error.message);
+        });
+    }
+
+    /*    
+    -------------------------------------
+    User Interaction Functions
+    -------------------------------------
+    1. scritch - increases pet's mood by 10
+    2. rename - prompts user to enter a new name for the pet
+    3. play - increases pet's mood by 40 and decreases hunger by 10
+    4. feed - increases pet's hunger by 20
+    
+    */
+    function scritch(pet) {
+        pet.mood = Math.min(pet.mood + 10, 100);
+        updateUI(pet)
+        logAction("scritch", pet.name, "mood", 10)
+    }
+
+    function rename(pet) {
+        const newName = prompt("Enter a new name for your pet:", pet.name);
+        if (newName) {
+            pet.name = newName;
+
+            //Save new name to server
+            fetch('/renamePet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ petId: pet.id, newName: newName })
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to rename pet.");
+                }
+            }).catch(error => {
+                alert("An error occurred while renaming the pet: " + error.message);
+            });
+            updateUI(pet);
+        }
+    }
+
+    function play(pet) {
+        pet.mood = Math.min(pet.mood + 40, 100);
+        pet.hunger = Math.min(pet.hunger - 10, 100);
+        updateUI(pet)
+        logAction("play", pet.name, "mood", 40, "hunger", -10)
+    }
+
+    function feed(pet) {
+        pet.hunger = Math.min(pet.hunger + 20, 100);
+        updateUI(pet)
+        logAction("feed", pet.name, "hunger", 20)
+    }
+
+    /*
+    -------------------------------------
+    Game Tracking and Logs
+    -------------------------------------
+    1. mainGameLoop - starts the main game loop to update all pets
+    2. updatePet - updates pet stats based on elapsed time
+    3. adjustRates - adjusts decay rates based on current stats
+    4. updateUI - updates pet card UI elements
+    5. logAction - logs user actions with timestamps
+    */
+
+    function mainGameLoop() {
+        //clear any existing game loop
+        if (gameLoopInterval) {
+            clearInterval(gameLoopInterval);
+        }
+
+        //start new game loop
+        gameLoopInterval = setInterval(() => {
+            const currentTime = Date.now();
+
+            petsData.forEach(pet => {
+                if (pet.status == 1) {
+                    updatePet(pet, currentTime);
+                }
+            });
+        }, 1000); //loops every second
+    }
+
+    function updatePet(pet, currentTime) {
+        // Update decay rates based on current stats
+        adjustRates(pet);
+
+        // Update hunger based on elapsed time
+        const hungerElapsed = currentTime - pet.lastHungerUpdate;
+        if (hungerElapsed >= pet.hungerRate) {
+            if (pet.hunger > 0) {
+                pet.hunger -= 1;
+                const petHungerElement = document.getElementById(`hunger-${pet.id}`);
+                if (petHungerElement) {
+                    petHungerElement.innerHTML = `<strong>Hunger:</strong> ${pet.hunger} / 100`;
+                }
+            }
+            pet.lastHungerUpdate = currentTime;
+        }
+
+        // Update mood based on elapsed time
+        const moodElapsed = currentTime - pet.lastMoodUpdate;
+        if (moodElapsed >= pet.moodRate) {
+            if (pet.mood > 0) {
+                pet.mood -= 1;
+                const petMoodElement = document.getElementById(`mood-${pet.id}`);
+                if (petMoodElement) {
+                    petMoodElement.innerHTML = `<strong>Mood:</strong> ${pet.mood} / 100`;
+                }
+            }
+            pet.lastMoodUpdate = currentTime;
+        }
+
+        // Check for death
+        if (pet.hunger <= 0) {
+            pet.status = 0;
+            savePetData(pet);
+            window.location.reload();
+        }
+
+        // Auto-save every 5 seconds
+        const saveElapsed = currentTime - pet.lastSaveTime;
+        if (saveElapsed >= 5000) {
+            savePetData(pet);
+            pet.lastSaveTime = currentTime;
+        }
+    }
+
+    function adjustRates(pet) {
+        // Adjust hunger rate based on mood
+        if (pet.mood < 30) {
+            pet.hungerRate = 1000; // faster hunger decrease
+        } else if (pet.mood > 70) {
+            pet.hungerRate = 4000; // slower hunger decrease
+        } else {
+            pet.hungerRate = 2000; // normal hunger decrease
+        }
+
+        // Adjust mood rate based on hunger
+        if (pet.hunger < 30) {
+            pet.moodRate = 1000; // faster mood decrease
+        } else if (pet.hunger > 70) {
+            pet.moodRate = 5000; // slower mood decrease
+        } else {
+            pet.moodRate = 3000; // normal mood decrease
+        }
+    }
+
+    function updateUI(pet) {
+        //get pet card elements
+        const petImageElement = document.getElementById("petImage-" + pet.id);
+        const petNameElement = document.getElementById(`petName-${pet.id}`);
+        const petHungerElement = document.getElementById(`hunger-${pet.id}`);
+        const petMoodElement = document.getElementById(`mood-${pet.id}`);
+        const petStatusElement = document.getElementById(`petStatus-${pet.id}`);
+        //update pet image based on status
+        if (pet.status == 0) {
+            petImageElement.src = "./virtualPet/urn.png";
+        } else {
+            petImageElement.src = `./virtualPet/` + pet.type + `.png`;
+        }
+        //ensure stats are within bounds
+        if (pet.mood < 0) pet.mood = 0;
+        if (pet.mood > 100) pet.mood = 100;
+        if (pet.type !== "fish") {
+            if (pet.hunger < 0) pet.hunger = 0;
+            if (pet.hunger > 100) pet.hunger = 100;
+        } else {
+            if (pet.hunger < 0) pet.hunger = 0;
+            if (pet.hunger > 120) {
+                pet.hunger = 120;
+                pet.mood = Math.max(pet.mood - 10, 0); //overfeeding reduces mood
+            }
+        }
+        //update pet card elements
+        petNameElement.innerHTML = `<strong>Name:</strong> ${pet.name}`;
+        petHungerElement.innerHTML = `<strong>Hunger:</strong> ${pet.hunger} / 100`;
+        petMoodElement.innerHTML = `<strong>Mood:</strong> ${pet.mood} / 100`;
+        petStatusElement.innerHTML = `<strong>Status:</strong> ${pet.status == 1 ? "alive" : "dead"}`;
+    }
+
+    function logAction(action, pet, stat, value, stat2, value2) {
+        let logMessage
+        let params
+
+        let sign
+        if (value >= 0) {
+            sign = "+"
+        } else if (value < 0) {
+            sign = "-"
+        }
+
+        if (!stat2 && !value2) {
+            params = `${pet}: ${stat} ${sign}${value}!`
+        } else {
+            let sign2
+            if (value2 >= 0) {
+                sign2 = "+"
+            } else if (value2 < 0) {
+                sign2 = "-"
+                value2 = Math.abs(value2)
+            }
+            params = `${pet}: ${stat} ${sign}${value}, ${stat2} ${sign2}${value2}!`
+        }
+
+        switch (action) {
+            case "scritch":
+                logMessage = `You scritched ${params}`
+                break;
+            case "play":
+                logMessage = `You threw a toy for ${params}`
+                break;
+            case "feed":
+                logMessage = `You fed ${params}`
+                break;
+        }
+        let gameLog = document.getElementById("game-log");
+        let timestamp = new Date().toLocaleTimeString();
+        gameLog.innerHTML += `<p>[${timestamp}]: ${logMessage}</p>`;
+    }
+</script>
+
+</html>
