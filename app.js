@@ -51,11 +51,11 @@ const socket = io(AUTH_URL, {
 
 // ROUTES
 app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1' });
+    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2' });
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1' });
+    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2' });
 });
 
 app.get('/login', (req, res) => {
@@ -130,7 +130,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
 
             </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1', data: data });
+    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -168,7 +168,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 
             </details>`,
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1', data: data });
+    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 }
 );
 
@@ -193,7 +193,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">[ ________ ] 'Space' - Drop the moving block</li>  
                 </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1', data: data });
+    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 }
 );
 
@@ -229,7 +229,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1', data: data });
+    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
