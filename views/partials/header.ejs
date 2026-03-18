@@ -127,6 +127,11 @@
             cursor: pointer;
             transition: transform 120ms ease, box-shadow 120ms ease;
         }
+        #gamePointsDisplay {
+            text-align: center;
+            margin-top: 15px;
+        }
+
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -166,6 +171,7 @@
                 Digipogs</button>
         </div>
 
+        <p id="gamePointsDisplay">You have 0 game points</p>
 
         <button id="closeWindow" onclick="gamePointsShop('close')">Close</button>
     </div>
@@ -216,17 +222,18 @@
 
     function buyPoints(value, pogs) {
         let pin = parseInt(prompt("To purchase " + value + " Game Points, please enter your PIN and confirm the transaction."), 10);
+        let reward = value;
+        let user = JSON.parse('<%- JSON.stringify(user) %>');
         console.log(pin);
 
         if (Number.isInteger(pin)) {
-            socket.emit('transaction', pin, pogs);
+            socket.emit('transaction', pin, pogs, reward, user);
         } else {
             alert("Transaction cancelled.");
             return;
         }
-
-        
     }
+
 
     function gamePointsShop(state) {
         let shop = document.getElementById('gamePointsWindow');

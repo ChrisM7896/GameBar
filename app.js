@@ -47,20 +47,21 @@ function isAuthenticated(req, res, next) {
 };
 
 // SOCKET.IO CLIENT TO AUTH SERVER
-const authSocket = ioClient(AUTH_URL, {
-    extraHeaders: {
-        api: API_KEY
-    }
-});
 
 
 const server = http.createServer(app);
 const io = new Server(server);
 let clientID;
 
+const authSocket = ioClient(AUTH_URL, {
+    extraHeaders: {
+        api: API_KEY
+    }
+});
+
 // ROUTES
 app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.1' });
+    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2' });
     clientID = req.session.token.id;
 });
 
@@ -264,31 +265,41 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
+var socketReturn = false;
 io.on('connection', (socket) => {
-    socket.on('transaction', (pin, amount) => {
+    authSocket.on("transferResponse", (response) => {
+        console.log("Transfer Response:", response);
+        socketReturn = response.success;
+    });
+
+    socket.on('transaction', (pin, amount, reward, user) => {
         const data = {
             from: clientID,
-            to: 50,
+            to: 128,
             amount: amount,
             reason: 'GameBar Transaction',
             pin: pin,
-            pool: true
         };
 
+        const gamePoints = reward;
+        const username = user;
         console.log(data);
 
         authSocket.emit('transferDigipogs', data);
+
+        setTimeout(() => {
+            if (socketReturn) {
+                console.log(socketReturn);
+                db.run('UPDATE users SET gp = gp + ? WHERE username = ?', [gamePoints, username], function (err) {
+                    if (err) {
+                        return console.error(err.message);
+                    }
+                    console.log(`Added ${gamePoints} GP to user ${username}.`);
+                });
+            }
+        }, 1000);
     });
 
-    socket.on('transferResponse', (response) => {
-        console.log('Received transfer response:', response);
-    });
-
-
-    socket.on('setClass', (classData) => {
-        console.log('Received class data:', classData);
-        // Handle class data as needed
-    });
 });
 
 io.on('disconnect', () => {
