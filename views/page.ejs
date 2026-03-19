@@ -155,6 +155,19 @@
             button.style.transform = 'scale(1)';
             button.style.boxShadow = 'none';
         });
+
+
+        function play() {
+            let isConfirmed = window.confirm('Are you sure you want to play this game? It will cost <%- cost %> game points.');
+
+            if (isConfirmed) {
+                socket.emit('playGame', { game: '<%- data.game %>', cost: '<%- cost %>', user: '<%- user %>' });
+            }
+        }
+
+        socket.on('relocate', () => {
+            window.location.href = `/game_${'<%- data.game %>'.toLowerCase()}`;
+        });
     </script>
 
     </html>

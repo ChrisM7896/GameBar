@@ -60,20 +60,12 @@ const authSocket = ioClient(AUTH_URL, {
 });
 
 // ROUTES
-app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2' });
-    clientID = req.session.token.id;
-});
-
-app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2' });
-});
-
 app.get('/login', (req, res) => {
     if (req.query.token) {
         let tokenData = jwt.decode(req.query.token);
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
+
 
 
         // SAVE USER TO DATABSE IF NOT EXISTS
@@ -84,10 +76,28 @@ app.get('/login', (req, res) => {
             console.log(`User ${tokenData.displayName} saved to database.`);
         });
 
-        res.redirect('/');
+        // GET GAMEPOINTS FROM DATABASE
+        db.get('SELECT gp FROM users WHERE username = ?', [tokenData.displayName], (err, row) => {
+            if (err) {
+                console.error(err.message);
+            } else {
+                req.session.gp = row ? String(row.gp) : 0;
+                console.log(`User ${tokenData.displayName} has ${req.session.gp} GP.`);
+                res.redirect('/');
+            }
+        });
     } else {
         res.redirect(`${AUTH_URL}/oauth?redirectURL=${THIS_URL}`);
     };
+});
+
+app.get('/', isAuthenticated, (req, res) => {
+    res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.2.2' });
+    clientID = req.session.token.id;
+});
+
+app.get('/changes', isAuthenticated, (req, res) => {
+    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.2.2' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -107,7 +117,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </details>`,
         game: '2048',
         preview: `<img id="previewImg" src="/2048/2048preview.png" alt="2048 preview" height="500">`,
-        playButton: `<button id="button" onclick="window.location.href='/game_2048'">Play</button>`,
+        playButton: `<button id="button" onclick="play()"">Play</button>`,
         guide: `Use the arrow keys to move the tiles. When two tiles with the same number touch, they merge into a
         greater one! The goal is to create a tile with the number 2048. Be careful, though: if the board fills
         up and you can't make any more moves, it's game over!`,
@@ -142,7 +152,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         
         </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -159,7 +169,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
         </details>`,
         game: 'Snake',
         preview: `<img id="previewImg" src="/snake/snakepreview.png" alt="Snake Preview" height="500">`,
-        playButton: `<button id="button" onclick="window.location.href='/game_snake'">Play</button>`,
+        playButton: `<button id="button" onclick="play()"">Play</button>`,
         guide: `Use the arrow keys to move the snake in the desired direction. Eat the red apples to grow longer, but be careful not to run into your own tail or the walls!`,
         specifics: ` <details>
         <summary class="summaries">Specifics</summary>
@@ -180,7 +190,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 
                 </details>`,
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 }
 );
 
@@ -196,7 +206,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
             </details>`,
         game: 'Stack',
         preview: `<img id="previewImg" src="/stack/stackpreview.png" alt="Stack Preview" height="500">`,
-        playButton: `<button id="button" onclick="window.location.href='/game_stack'">Play</button>`,
+        playButton: `<button id="button" onclick="play()"">Play</button>`,
         guide: `Select your difficulty and press the spacebar to drop the moving block as evenly onto the stack as possible. The more unevenly you drop it, the smaller the next block will be, making it harder to stack. If you miss the stack entirely, it's game over! Try to stack as high as possible!`,
         specifics: ` <details>
             <summary class="summaries">Specifics</summary>
@@ -205,7 +215,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">[ ________ ] 'Space' - Drop the moving block</li>  
                 </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 }
 );
 
@@ -226,7 +236,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
             </details>`,
         game: 'Alchemy',
         preview: `<img id="previewImg" src="/alchemy/alchemypreview.png" alt="Alchemy Preview" height="500">`,
-        playButton: `<button id="button" onclick="window.location.href='/game_alchemy'">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Drag and drop elements onto the game area to combine them. If the combination is correct, a new element will be created! You can also double click an element to spawn another one, and right click to delete it. Try to discover them all!`,
         specifics: ` <details>
                 <summary class="summaries">Specifics</summary>
@@ -241,23 +251,23 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.2.2', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
-    res.render('games/2048/game_2048', { user: req.session.user, pageName: '2048', version: 'v1.1.1' });
+    res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, pageName: '2048', version: 'v1.1.1' });
 });
 
 app.get('/game_snake', isAuthenticated, (req, res) => {
-    res.render('games/snake/game_snake', { user: req.session.user, pageName: 'Snake', version: 'v1.0.1' });
+    res.render('games/snake/game_snake', { user: req.session.user, gp: req.session.gp, pageName: 'Snake', version: 'v1.0.1' });
 });
 
 app.get('/game_stack', isAuthenticated, (req, res) => {
-    res.render('games/stack/game_stack', { user: req.session.user, pageName: 'Stack', version: 'v1.0.0' });
+    res.render('games/stack/game_stack', { user: req.session.user, gp: req.session.gp, pageName: 'Stack', version: 'v1.0.0' });
 });
 
 app.get('/game_alchemy', isAuthenticated, (req, res) => {
-    res.render('games/alchemy/game_alchemy', { user: req.session.user, pageName: 'Alchemy', version: 'v1.0.2' });
+    res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, pageName: 'Alchemy', version: 'v1.0.2' });
 });
 
 app.get('/logout', (req, res) => {
@@ -275,7 +285,7 @@ io.on('connection', (socket) => {
     socket.on('transaction', (pin, amount, reward, user) => {
         const data = {
             from: clientID,
-            to: 128,
+            to: 49,
             amount: amount,
             reason: 'GameBar Transaction',
             pin: pin,
@@ -300,14 +310,26 @@ io.on('connection', (socket) => {
         }, 1000);
     });
 
+    socket.on('playGame', (data) => {
+        let user = data.user;
+        let cost = parseInt(data.cost);
+
+        db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+            if (err) {
+                return console.error(err.message);
+            } else {
+                socket.emit('relocate')
+            }
+        });
+    });
+
+    io.on('disconnect', () => {
+        console.log('Disconnected from auth server');
+    });
+
+
+
 });
-
-io.on('disconnect', () => {
-    console.log('Disconnected from auth server');
-});
-
-
-
 // START SERVER
 server.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
