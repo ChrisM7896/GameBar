@@ -168,6 +168,10 @@
         socket.on('relocate', () => {
             window.location.href = `/game_${'<%- data.game %>'.toLowerCase()}`;
         });
+
+        socket.on('insufficientFunds', () => {
+            alert('You do not have enough game points to play this game.');
+        });
     </script>
 
     </html>

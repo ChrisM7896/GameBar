@@ -74,17 +74,7 @@ app.get('/login', (req, res) => {
                 return console.error(err.message);
             }
             console.log(`User ${tokenData.displayName} saved to database.`);
-        });
-
-        // GET GAMEPOINTS FROM DATABASE
-        db.get('SELECT gp FROM users WHERE username = ?', [tokenData.displayName], (err, row) => {
-            if (err) {
-                console.error(err.message);
-            } else {
-                req.session.gp = row ? String(row.gp) : 0;
-                console.log(`User ${tokenData.displayName} has ${req.session.gp} GP.`);
-                res.redirect('/');
-            }
+            res.redirect('/');
         });
     } else {
         res.redirect(`${AUTH_URL}/oauth?redirectURL=${THIS_URL}`);
@@ -92,12 +82,23 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/', isAuthenticated, (req, res) => {
-    res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.2.2' });
     clientID = req.session.token.id;
+
+    // GET GAMEPOINTS FROM DATABASE
+    db.get('SELECT gp FROM users WHERE username = ?', [req.session.user], (err, row) => {
+        if (err) {
+            console.error(err.message);
+        } else {
+            req.session.gp = row ? row.gp : 0;
+            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.0' });
+        }
+    });
+
+
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.2.2' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.0' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -152,7 +153,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.0', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -190,7 +191,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 
                 </details>`,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.3.0', data: data });
 }
 );
 
@@ -203,6 +204,8 @@ app.get('/stack', isAuthenticated, (req, res) => {
             <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
             <div class="changelog-header">v1.0.0 - Stack Released - 3/06/2026</div>
             <li class="innerli">Initial release of Stack on Gamebar</li>
+            <div class="changelog-header">v1.0.1 - Small Tweak - 3/20/2026</div>
+            <li class="innerli">Deleted mode selection refresh on game over</li>
             </details>`,
         game: 'Stack',
         preview: `<img id="previewImg" src="/stack/stackpreview.png" alt="Stack Preview" height="500">`,
@@ -213,9 +216,18 @@ app.get('/stack', isAuthenticated, (req, res) => {
             <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
                 <h3>Keybinds:</h3>  
                 <li class="innerli">[ ________ ] 'Space' - Drop the moving block</li>  
-                </details>`
+                <h3> Wordified Logic:</h3>
+                <li class="innerli">Player chooses difficulty from the options in the mode selection menu.</li>
+                <li class="innerli">Game loop begins, drawing the bottom platform. This platform is considered as one of the blocks.</li>
+                <li class="innerli">First block starts from either the left or right side of the canvas, and moves towards the center at a speed determined by the difficulty.</li>
+                <li class="innerli">The player must press the space bar when the block is aligned with the platform to gain points. If the block hits the side of the canvas, it bounces off and speeds up slightly.</li>
+                <li class="innerli">If the player presses when the block is aligned with the previous block, they earn one point. If it is not perfectly aligned, the block's width is sliced to match the side of the previous block, making it smaller and more difficult to align with the next block.</li>
+                <li class="innerli">If the block is perfectly aligned, check if the last five blocks are all perfectly aligned. If not, award one extra point and increase the perfect counter. If so, award four extra points and clear the perfect counter.</li>
+                <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
+                </details>
+            `
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.3.0', data: data });
 }
 );
 
@@ -236,7 +248,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
             </details>`,
         game: 'Alchemy',
         preview: `<img id="previewImg" src="/alchemy/alchemypreview.png" alt="Alchemy Preview" height="500">`,
-        playButton: `<button id="button" onclick="play()">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Buy</button>`,
         guide: `Drag and drop elements onto the game area to combine them. If the combination is correct, a new element will be created! You can also double click an element to spawn another one, and right click to delete it. Try to discover them all!`,
         specifics: ` <details>
                 <summary class="summaries">Specifics</summary>
@@ -251,7 +263,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.2.2', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.3.0', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -314,22 +326,28 @@ io.on('connection', (socket) => {
         let user = data.user;
         let cost = parseInt(data.cost);
 
-        db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+        db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
             if (err) {
-                return console.error(err.message);
+                console.error(err.message);
+            } else if (row.gp < cost) {
+                socket.emit('insufficientFunds');
             } else {
-                socket.emit('relocate')
+                db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                    if (err) {
+                        return console.error(err.message);
+                    } else {
+                        socket.emit('relocate')
+                    }
+                });
             }
         });
     });
-
-    io.on('disconnect', () => {
-        console.log('Disconnected from auth server');
-    });
-
-
-
 });
+
+io.on('disconnect', () => {
+    console.log('Disconnected from auth server');
+});
+
 // START SERVER
 server.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
