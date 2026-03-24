@@ -91,7 +91,7 @@ app.get('/', isAuthenticated, (req, res) => {
             console.error(err.message);
         } else {
             req.session.gp = row ? row.gp : 0;
-            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.1' });
+            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.2' });
         }
     });
 
@@ -99,15 +99,15 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.1' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.2' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
     const data = {
         description: `Based on the classic computer game, players must shift tiles with different numbers, combining like
         numbers with the goal of reaching a 2048 tile. <br><br>This project originally began as a solo venture,
-        separate from GameBar, but as work piled up and GameBar was founded, it was just natural to include it.
-        It was then completed, themed around GameBar, and is the first completed GameBar game.`,
+        separate from Gamebar, but as work piled up and Gamebar was founded, it was just natural to include it.
+        It was then completed, themed around Gamebar, and is the first completed Gamebar game.`,
         developer: 'Christian Martin',
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
@@ -154,12 +154,12 @@ app.get('/2048', isAuthenticated, (req, res) => {
         
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.2', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
     const data = {
-        description: `Based on the classic online game, users simply have the goal of eating as many apples and growing as big as possible without crossing over their own tail or hitting the borders. <br><br> This project was one of the first ideas for GameBar, and was officially started by Jan, becoming the second completed GameBar game!`,
+        description: `Based on the classic online game, users simply have the goal of eating as many apples and growing as big as possible without crossing over their own tail or hitting the borders. <br><br> This project was one of the first ideas for Gamebar, and was officially started by Jan, becoming the second completed Gamebar game!`,
         developer: 'Jan Cruz-Valentin',
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
@@ -192,13 +192,13 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 
                 </details>`,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.3.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.3.2', data: data });
 }
 );
 
 app.get('/stack', isAuthenticated, (req, res) => {
     const data = {
-        description: `Based on the mobile game, this singleplayer game challenges player's timing and reaction time abilities with the mission of creating as high of a tower as possible, as mistakes make that goal harder. <br><br> This project is the third completed GameBar game, and the quickest one completed yet, being finished in just a couple days.`,
+        description: `Based on the mobile game, this singleplayer game challenges player's timing and reaction time abilities with the mission of creating as high of a tower as possible, as mistakes make that goal harder. <br><br> This project is the third completed Gamebar game, and the quickest one completed yet, being finished in just a couple days.`,
         developer: 'Kris Bowman',
         changelog: `<details>
             <summary class="summaries">Changelog</summary>
@@ -228,13 +228,13 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 </details>
             `
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.3.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.3.2', data: data });
 }
 );
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
     const data = {
-        description: `Based on the popular online game, this singleplayer game challenges player's problem solving and thinking skills (sort of), by challenging them to create new elements from 4 beginner ones. <br><br> This project is the fourth completed GameBar game, and my personal favorite - Chris`,
+        description: `Based on the popular online game, this singleplayer game challenges player's problem solving and thinking skills (sort of), by challenging them to create new elements from 4 beginner ones. <br><br> This project is the fourth completed Gamebar game, and my personal favorite - Chris`,
         developer: 'Christian Martin',
         changelog: `<details>
                 <summary class="summaries">Changelog</summary>
@@ -264,12 +264,12 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.3.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.3.2', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
     const data = {
-        description: 'Based on the classic online game, this singleplayer game challenges the player\'s vocabulary, challenging them to guess the hidden word in six tries or less. <br><br> This project is the fifth completed GameBar game, and the quickest completed one, being finished in only 3 hours. It was also the first GameBar game to use its own library, which proved to be a challenge. <br><br>Overall, I love how this turned out, I\'m glad I got bored on that particular weekend - Chris',
+        description: 'Based on the classic online game, this singleplayer game challenges the player\'s vocabulary, challenging them to guess the hidden word in six tries or less. <br><br> This project is the fifth completed Gamebar game, and the quickest completed one, being finished in only 3 hours. It was also the first Gamebar game to use its own library, which proved to be a challenge. <br><br>Overall, I love how this turned out, I\'m glad I got bored on that particular weekend - Chris',
         developer: 'Christian Martin',
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
@@ -294,7 +294,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.3.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.3.2', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -336,7 +336,7 @@ io.on('connection', (socket) => {
             from: clientID,
             to: 49,
             amount: amount,
-            reason: 'GameBar Transaction',
+            reason: 'Gamebar Transaction',
             pin: pin,
         };
 

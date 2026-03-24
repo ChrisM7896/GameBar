@@ -18,11 +18,13 @@
         }
 
         #partials-header-hr {
+            position: relative;
             width: 100%;
             border: 1px solid;
             box-shadow: 0px 0px 20px rgb(13, 71, 71);
             margin-top: 12px;
             margin-bottom: 20px;
+            z-index: -2;
         }
 
         #partials-header-title {
@@ -32,6 +34,7 @@
             left: 50%;
             transform: translateX(-50%);
             margin: 5px;
+            z-index: 0;
         }
 
         #partials-header-user {
@@ -127,9 +130,23 @@
             cursor: pointer;
             transition: transform 120ms ease, box-shadow 120ms ease;
         }
+
         #gamePointsDisplay {
             text-align: center;
             margin-top: 15px;
+        }
+
+        #partials-header-splash-text {
+            font-size: 0.9em;
+            color: #babf56;
+            text-shadow: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0f0f0f;
+            margin-left: 28px;
+            padding: 5px;
+            z-index: -1;
         }
 
     </style>
@@ -152,6 +169,12 @@
             <img src="/index/bag.png" id="partials-header-gamepoints-button">
             <h3 id="partials-header-gamepoints-label">Game Points</h3>
         </div>
+
+
+        <div id="partials-header-splash-text-container">
+            <div id="partials-header-splash-text"></div>
+        </div>
+
 
         <hr class='partials-header' id="partials-header-hr" />
     </div>
@@ -178,6 +201,8 @@
 
 </body>
 <script>
+    // SPLASH TEXT
+    // ↓↓↓↓↓↓↓↓↓↓↓
     let splashList = [
         "New games coming soon!",
         "Check out the changelog for updates!",
@@ -189,7 +214,6 @@
         "It no worky",
         "RIP Formpix, 202x-2026",
         "Your mother",
-        "Don't refresh games, it'll softlock you :D",
         "We are NOT a dictatorship",
         "Totally 100% accurate to the originals",
         "Favicons suck",
@@ -199,6 +223,8 @@
         "This is NOT a Minecraft reference",
         "67",
         "69",
+        "420",
+        "1337",
         "Cass is racist",
         "Gabby you're late",
         "Hayden get off your phone your girlfriend can wait",
@@ -208,7 +234,7 @@
         "I should've gotten Pogipedia bro",
         "I'm not paid enough for this",
         "Chrissy Kirk",
-        "#1 CSS Developer", // make sure this one is in the wrong spot / janky
+        "#1 CSS<br><br> Dev   elop<br>er",
         "Jubekar",
         "Days since last bug: 0",
         "The one pog is real",
@@ -217,9 +243,33 @@
         "formbeta.yorktechapps.com",
         "Kayden get off silksong",
         "RIP Quiz Queue, you won't be missed",
-        "Just get better"
+        "RIP Chicken Sandwich",
+        "Just get better",
+        "Delete the server",
+        "steambar",
+        "Waleezer",
+        "The Legend of Samisu",
+        "Can I fire Dylan yet?",
     ];
 
+    let splashTextElement = document.getElementById('partials-header-splash-text');
+    let randomIndex = Math.floor(Math.random() * splashList.length);
+
+    if (randomIndex == 30) {
+        splashTextElement.style.fontSize = '1.2em';
+        splashTextElement.style.color = '#123456';
+        splashTextElement.style.textShadow = '0 0 10px #FF0000';
+        splashTextElement.style.zIndex = '100';
+        splashTextElement.style.backgroundColor = '#FFFFFF';
+        splashTextElement.style.left = '30%';
+        splashTextElement.style.transform = 'translateX(-30%)';
+        splashTextElement.style.borderLeft = '5px solid #00FF00';
+        splashTextElement.style.paddingLeft = '50px';
+    }
+    splashTextElement.innerHTML = splashList[randomIndex];
+
+    // GAME POINTS LOGIC
+    // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     function buyPoints(value, pogs) {
         let pin = parseInt(prompt("To purchase " + value + " Game Points, please enter your PIN and confirm the transaction."), 10);
         let reward = value;
@@ -234,6 +284,9 @@
         }
     }
 
+    socket.on('transactionSuccess', () => {
+        alert("Transaction successful! Your Game Points balance has been updated. Refresh the home page to view the change :)");
+    });
 
     function gamePointsShop(state) {
         let shop = document.getElementById('gamePointsWindow');
@@ -248,6 +301,8 @@
         }
     }
 
+    // BUTTON HOVER EFFECTS
+    // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     let buttonsVar = document.getElementsByClassName('purchaseButtons');
     Array.prototype.forEach.call(buttonsVar, element => {
         element.addEventListener('mouseover', () => {
@@ -260,9 +315,6 @@
         });
     });
 
-    socket.on('transactionSuccess', () => {
-        alert("Transaction successful! Your Game Points balance has been updated. Refresh the home page to view the change :)");
-    }); 
 
 </script>
 
