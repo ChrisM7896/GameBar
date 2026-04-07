@@ -1,311 +1,337 @@
 <%- include('../../partials/header') %>
-    <title>Gamebar - Alchemy</title>
-    <style>
-        #partials-header-version {
-            right: 845px;
-            top: 29px;
-        }
-        #game {
-            width: 75%;
-            border-right: 1px solid;
-            float: left;
-            padding: 15px;
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/alchemy/logoAlchemy.png';
+        document.head.appendChild(link);
+    </script>
 
-            overflow: hidden;
-            position: relative;
-        }
-        
-        #sidebar {
-            width: 25%;
-            float: right;
-            padding: 15px;
-            overflow-y: scroll;
-            border: 2px solid ;
-            border-left: 1px solid;
-        }
+    <head>
+        <title>Gamebar - Alchemy</title>
+        <style>
+            #partials-header-version {
+                right: 845px;
+                top: 29px;
+            }
 
-        ::-webkit-scrollbar {
+            #game {
+                width: 75%;
+                border-right: 1px solid;
+                float: left;
+                padding: 15px;
+
+                overflow: hidden;
+                position: relative;
+            }
+
+            #sidebar {
+                width: 25%;
+                float: right;
+                padding: 15px;
+                overflow-y: scroll;
+                border: 2px solid;
+                border-left: 1px solid;
+            }
+
+            ::-webkit-scrollbar {
                 width: 0px;
             }
-        
-        #game,
-        #sidebar {
-            box-sizing: border-box;
-            background-color: #0f0f0f;
-            border: 2px solid #4d664d;
-            box-shadow: 0px 0px 20px rgb(13, 71, 71);
-            border-radius: 8px;
-            height:80vh;
+
+            #game,
+            #sidebar {
+                box-sizing: border-box;
+                background-color: #0f0f0f;
+                border: 2px solid #4d664d;
+                box-shadow: 0px 0px 20px rgb(13, 71, 71);
+                border-radius: 8px;
+                height: 80vh;
+            }
+
+            .elementButton {
+                padding: 10px;
+                margin: 2px;
+                border-radius: 5px;
+                cursor: pointer;
+                border: solid 1px #4d664d;
+                background-color: #151b1b;
+                color: #4d664d;
+                text-shadow: 0px 0px 5px rgb(13, 71, 71);
+            }
+
+            .elementButton:disabled {
+                background-color: #151b1b;
+                color: #4d664d;
+                text-shadow: 0px 0px 5px rgb(13, 71, 71);
+                border: solid 1px #4d664d;
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            #reset,
+            #clear {
+                background-color: #0f0f0f;
+                color: #4d664d;
+                width: 55px;
+                height: 55px;
+                border: solid 2px #4d664d;
+                border-radius: 50%;
+                float: right;
+                text-align: center;
+                font-size: 12px;
+                font-weight: bold;
+                margin: 5px;
+                cursor: pointer;
+                box-shadow: 0px 0px 10px rgb(13, 71, 71);
+            }
+
+            .summaries {
+                font-size: 1.2em;
+                cursor: pointer;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+
+            .sidebarhr {
+                border: 1px solid #4d664d;
+                box-shadow: 0px 0px 10px rgb(13, 71, 71);
+                margin-bottom: 10px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="game" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)">
+            <button id="reset" onclick="reset()">Reset</button>
+            <button id="clear" onclick="clearGame()">Clear</button>
+        </div>
+        <div id="sidebar" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)">
+            <h2 id="sidebarHeader">Elements (Loading...)</h2>
+            <details id="defaults" open="true">
+                <summary class="summaries">Default</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="nature">
+                <summary class="summaries">Nature</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="humanInnovation">
+                <summary class="summaries">Human Innovation</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="space">
+                <summary class="summaries">Space</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="science">
+                <summary class="summaries">Science</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="animals">
+                <summary class="summaries">Animals</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="occupations">
+                <summary class="summaries">Occupations</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="mythology">
+                <summary class="summaries">Mythology</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="foodDrink">
+                <summary class="summaries">Food & Drink</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="notableFigures">
+                <summary class="summaries">Notable Figures & History</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="media">
+                <summary class="summaries">Media & The Internet</summary>
+                <hr class="sidebarhr">
+            </details>
+            <details id="feelingsTraits">
+                <summary class="summaries">Feelings & Traits</summary>
+                <hr class="sidebarhr">
+            </details>
+        </div>
+    </body>
+    <script src="/alchemy/alchemy.js"></script>
+    <script>
+        function reset() {
+            window.confirm("Are you sure you want to reset? This will clear all progress and cannot be undone.") &&
+                location.reload();
         }
 
-        .elementButton {
-            padding: 10px;
-            margin: 2px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: solid 1px #4d664d;
-            background-color: #151b1b;
-            color: #4d664d;
-            text-shadow: 0px 0px 5px rgb(13, 71, 71);
-        }
-
-        .elementButton:disabled {
-            background-color: #151b1b;
-            color: #4d664d;
-            text-shadow: 0px 0px 5px rgb(13, 71, 71);
-            border: solid 1px #4d664d;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #reset,
-        #clear {
-            background-color: #0f0f0f;
-            color: #4d664d;
-            width: 55px;
-            height: 55px;
-            border: solid 2px #4d664d;
-            border-radius: 50%;
-            float: right;
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            margin: 5px;
-            cursor: pointer;
-            box-shadow: 0px 0px 10px rgb(13, 71, 71);
-        }
-
-        .summaries {
-            font-size: 1.2em;
-            cursor: pointer;
-            margin-bottom: 5px;
-            margin-top: 5px;
-        }
-        .sidebarhr {
-            border: 1px solid #4d664d;
-            box-shadow: 0px 0px 10px rgb(13, 71, 71);
-            margin-bottom: 10px;
-        }   
-    </style>
-</head>
-
-<body>
-    <div id="game" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)">
-        <button id="reset" onclick="reset()">Reset</button>
-        <button id="clear" onclick="clearGame()">Clear</button>
-    </div>
-    <div id="sidebar" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)">
-        <h2 id="sidebarHeader">Elements ()</h2>
-        <details id="defaults" open="true">
-            <summary class="summaries">Default</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="nature">
-            <summary class="summaries">Nature</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="humanInnovation">
-            <summary class="summaries">Human Innovation</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="space">
-            <summary class="summaries">Space</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="science">
-            <summary class="summaries">Science</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="animals">
-            <summary class="summaries">Animals</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="occupations">
-            <summary class="summaries">Occupations</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="mythology">
-            <summary class="summaries">Mythology</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="foodDrink">
-            <summary class="summaries">Food & Drink</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="notableFigures">
-            <summary class="summaries">Notable Figures & History</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="media">
-            <summary class="summaries">Media & The Internet</summary>
-            <hr class="sidebarhr">
-        </details>
-        <details id="feelingsTraits">
-            <summary class="summaries">Feelings & Traits</summary>
-            <hr class="sidebarhr">
-        </details>
-    </div>
-</body>
-<script src="/alchemy/alchemy.js"></script>
-<script>
-    
-
-    function reset() {
-        window.confirm("Are you sure you want to reset? This will clear all progress and cannot be undone.") &&
-            location.reload();
-    }
-
-    function clearGame() {
-        gameArea.innerHTML = `
+        function clearGame() {
+            gameArea.innerHTML = `
         <button id="reset" onclick="reset()">Reset</button>
         <button id="clear" onclick="clearGame()">Clear</button>
         `
-        elementsOn = []
-    }
-
-    window.onload = function () {
-        document.getElementById("sidebarHeader").innerHTML = `Elements (${totalUnlockedElements}/${totalElements})`
-        elementsObject.forEach(element => {
-            let button = document.createElement("button");
-            if (element.locked == false) {
-                button.innerHTML = element.text;
-                button.draggable = true;
-                button.disabled = false;
-                button.ondragstart = dragstartHandler;
-                button.onclick = spawn;
-                button.className = 'elementButton';
-            } else {
-                button.innerHTML = "🔒 ";
-                for (let char of element.name) {
-                    if (char == ' ') {
-                        button.innerHTML += ' ';
-                    } else {
-                        button.innerHTML += '?';
-                    }
-                }
-                button.className = 'elementButton';
-                button.draggable = false;
-                button.disabled = true;
-            }
-
-            button.id = (element.name + '-og')
-            document.getElementById(`${element.category}`).appendChild(button);
-        });
-    }
-
-    function spawn(ev, pos) {
-        const data = ev.target.id;
-        const original = document.getElementById(data);
-        let clone = original.cloneNode(true);
-        clone.id = original.id + '-' + elementsOn.length
-        clone.style.position = 'absolute';
-        if (pos) {
-            getPos()
-            clone.style.left = cursorPosition.x + 'px';
-            clone.style.top = cursorPosition.y + 'px';
-        } else {
-            clone.style.left = Math.floor(Math.random() * (gameArea.clientWidth - clone.clientWidth)) + 'px';
-            clone.style.top = Math.floor(Math.random() * (gameArea.clientHeight - clone.clientHeight)) + 'px';
+            elementsOn = []
         }
-        clone.className = 'elementButton';
-        clone.ondragstart = dragstartHandler;
-        clone.ondblclick = () => spawn(event, true);
-        clone.addEventListener("contextmenu", (ev) => {
-            ev.preventDefault();
-            gameArea.removeChild(clone);
-        });
-        gameArea.appendChild(clone);
-        elementsOn.push(clone.id);
-    }
 
-    // Cursor Position Stuff ↓↓↓
-    var gameArea = document.getElementById("game");
-    var gameHover = false;
-    var cursorPosition = { x: 0, y: 0 };
-    gameArea.addEventListener("mouseover", () => {
-        gameHover = true;
-    });
+        window.onload = function () {
+            setTimeout(() => {
+                var totalElements = elementsObject.length;
 
-    gameArea.addEventListener("mousemove", () => {
-        if (gameHover) {
-            getPos();
-        }
-    });
+                document.getElementById("sidebarHeader").innerHTML = `Elements (${totalUnlockedElements}/${totalElements})`
+                elementsObject.forEach(element => {
+                    let button = document.createElement("button");
+                    
+                    // if (element.locked == false) {
+                    //     button.innerHTML = element.text;
+                    //     button.draggable = true;
+                    //     button.disabled = false;
+                    //     button.ondragstart = dragstartHandler;
+                    //     button.onclick = spawn;
+                    //     button.className = 'elementButton';
+                    // } else {
+                    //     button.innerHTML = "🔒 ";
+                    //     for (let char of element.name) {
+                    //         if (char == ' ') {
+                    //             button.innerHTML += ' ';
+                    //         } else {
+                    //             button.innerHTML += '?';
+                    //         }
+                    //     }
+                    //     button.className = 'elementButton';
+                    //     button.draggable = false;
+                    //     button.disabled = true;
+                    // }
 
-    gameArea.addEventListener("mouseout", () => {
-        gameHover = false;
-    });
+                    //////////////////////////////////////////////////////
+                    
+                    // COMMENT ABOVE AND UNCOMMENT BELOW FOR TESTING ↓↓↓
 
-    function getPos() {
-        const rect = gameArea.getBoundingClientRect();
-        cursorPosition.x = event.clientX - rect.left;
-        cursorPosition.y = event.clientY - rect.top;
-    }
+                    button.innerHTML = element.text;
+                    button.draggable = true;
+                    button.disabled = false;
+                    button.ondragstart = dragstartHandler;
+                    button.onclick = spawn;
+                    button.className = 'elementButton';
 
-    // Drag and Drop Handlers ↓↓↓
-    function dragstartHandler(ev) {
-        ev.dataTransfer.setData("text", ev.target.id);
-        ev.dataTransfer.setData("dodrag", ev.target.parentNode.id);
-    }
-
-    function dragoverHandler(ev) {
-        ev.preventDefault();
-    }
-
-    let totalUnlockedElements = 4;
-    let elementsOn = []
-    function dropHandler(ev) {
-        ev.preventDefault();
-        const data = ev.dataTransfer.getData("text");
-        const dodrag = ev.dataTransfer.getData("dodrag");
-        if (ev.target.id == 'game') {
-            if (dodrag == 'game') {
-                let element = document.getElementById(data);
-                getPos()
-                if (cursorPosition.x + element.clientWidth > gameArea.clientWidth || cursorPosition.y + element.clientHeight > gameArea.clientHeight) {
-                    return;
-                } else {
-                    element.style.left = cursorPosition.x + 'px';
-                    element.style.top = cursorPosition.y + 'px';
-                }
-            } else {
-                const original = document.getElementById(data);
-                let clone = original.cloneNode(true);
-                clone.id = original.id + '-' + elementsOn.length
-                clone.className = 'elementButton';
-                clone.style.position = 'absolute';
-                clone.ondragstart = dragstartHandler;
-                clone.ondblclick = () => spawn(event, true);
-                clone.addEventListener("contextmenu", (ev) => {
-                    ev.preventDefault();
-                    gameArea.removeChild(clone);
+                    //////////////////////////////////////////////////////
+                    button.id = (element.name + '-og')
+                    document.getElementById(`${element.category}`).appendChild(button);
                 });
-                getPos()
-                if (cursorPosition.x + original.clientWidth > gameArea.clientWidth || cursorPosition.y + original.clientHeight > gameArea.clientHeight) {
-                    return;
-                } else {
-                    clone.style.left = cursorPosition.x + 'px';
-                    clone.style.top = cursorPosition.y + 'px';
-                }
-                ev.target.appendChild(clone);
-                elementsOn.push(clone.id);
-            }
-        } else if (ev.target.tagName == 'BUTTON' && ev.target.parentNode.id == 'game' && ev.target.id != data) {
-            let merged = merge(ev.target.id, data)
-            let target = document.getElementById(ev.target.id);
-            target.innerHTML = merged.text;
-            elementsOn.splice(elementsOn.indexOf(target.id), 1);
-            target.id = merged.name + '-' + elementsOn.length;
-            elementsOn.push(target.id);
-            if (elementsOn.includes(data)) {
-                gameArea.removeChild(document.getElementById(data));
-            }
-        } else if ((ev.target.id == 'sidebar' || ev.target.parentNode.id == 'sidebar' || ev.target.parentNode.parentNode.id == 'sidebar') && dodrag == 'game') {
-            const element = document.getElementById(data);
-            element.parentNode.removeChild(element);
+            }, 50);
         }
-    }
 
-</script>
+        function spawn(ev, pos) {
+            const data = ev.target.id;
+            const original = document.getElementById(data);
+            let clone = original.cloneNode(true);
+            clone.id = original.id + '-' + elementsOn.length
+            clone.style.position = 'absolute';
+            if (pos) {
+                getPos()
+                clone.style.left = cursorPosition.x + 'px';
+                clone.style.top = cursorPosition.y + 'px';
+            } else {
+                clone.style.left = Math.floor(Math.random() * (gameArea.clientWidth - clone.clientWidth)) + 'px';
+                clone.style.top = Math.floor(Math.random() * (gameArea.clientHeight - clone.clientHeight)) + 'px';
+            }
+            clone.className = 'elementButton';
+            clone.ondragstart = dragstartHandler;
+            clone.ondblclick = () => spawn(event, true);
+            clone.addEventListener("contextmenu", (ev) => {
+                ev.preventDefault();
+                gameArea.removeChild(clone);
+            });
+            gameArea.appendChild(clone);
+            elementsOn.push(clone.id);
+        }
 
-</html>
+        // Cursor Position Stuff ↓↓↓
+        var gameArea = document.getElementById("game");
+        var gameHover = false;
+        var cursorPosition = { x: 0, y: 0 };
+        gameArea.addEventListener("mouseover", () => {
+            gameHover = true;
+        });
+
+        gameArea.addEventListener("mousemove", () => {
+            if (gameHover) {
+                getPos();
+            }
+        });
+
+        gameArea.addEventListener("mouseout", () => {
+            gameHover = false;
+        });
+
+        function getPos() {
+            const rect = gameArea.getBoundingClientRect();
+            cursorPosition.x = event.clientX - rect.left;
+            cursorPosition.y = event.clientY - rect.top;
+        }
+
+        // Drag and Drop Handlers ↓↓↓
+        function dragstartHandler(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("dodrag", ev.target.parentNode.id);
+        }
+
+        function dragoverHandler(ev) {
+            ev.preventDefault();
+        }
+
+        let totalUnlockedElements = 4;
+        let elementsOn = []
+        function dropHandler(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const dodrag = ev.dataTransfer.getData("dodrag");
+            if (ev.target.id == 'game') {
+                if (dodrag == 'game') {
+                    let element = document.getElementById(data);
+                    getPos()
+                    if (cursorPosition.x + element.clientWidth > gameArea.clientWidth || cursorPosition.y + element.clientHeight > gameArea.clientHeight) {
+                        return;
+                    } else {
+                        element.style.left = cursorPosition.x + 'px';
+                        element.style.top = cursorPosition.y + 'px';
+                    }
+                } else {
+                    const original = document.getElementById(data);
+                    let clone = original.cloneNode(true);
+                    clone.id = original.id + '-' + elementsOn.length
+                    clone.className = 'elementButton';
+                    clone.style.position = 'absolute';
+                    clone.ondragstart = dragstartHandler;
+                    clone.ondblclick = () => spawn(event, true);
+                    clone.addEventListener("contextmenu", (ev) => {
+                        ev.preventDefault();
+                        gameArea.removeChild(clone);
+                    });
+                    getPos()
+                    if (cursorPosition.x + original.clientWidth > gameArea.clientWidth || cursorPosition.y + original.clientHeight > gameArea.clientHeight) {
+                        return;
+                    } else {
+                        clone.style.left = cursorPosition.x + 'px';
+                        clone.style.top = cursorPosition.y + 'px';
+                    }
+                    ev.target.appendChild(clone);
+                    elementsOn.push(clone.id);
+                }
+            } else if (ev.target.tagName == 'BUTTON' && ev.target.parentNode.id == 'game' && ev.target.id != data) {
+                let merged = merge(ev.target.id, data)
+                let target = document.getElementById(ev.target.id);
+                target.innerHTML = merged.text;
+                elementsOn.splice(elementsOn.indexOf(target.id), 1);
+                target.id = merged.name + '-' + elementsOn.length;
+                elementsOn.push(target.id);
+                if (elementsOn.includes(data)) {
+                    gameArea.removeChild(document.getElementById(data));
+                }
+            } else if ((ev.target.id == 'sidebar' || ev.target.parentNode.id == 'sidebar' || ev.target.parentNode.parentNode.id == 'sidebar') && dodrag == 'game') {
+                const element = document.getElementById(data);
+                element.parentNode.removeChild(element);
+            }
+        }
+
+    </script>
+
+    </html>

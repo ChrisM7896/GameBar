@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "connect-sqlite3": "^0.9.16",
+    "datamuse": "^1.0.5",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
@@ -19,7 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "nodemon": "^3.1.11",
-    "socket.io": "^4.8.1",
+    "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.1",
     "sqlite3": "^5.1.7",
     "winston": "^3.19.0"

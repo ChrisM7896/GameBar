@@ -11,6 +11,10 @@
     <head>
         <title>Gamebar - Home</title>
         <style>
+            ::-webkit-scrollbar {
+                width: 0px;
+            }
+
             .game-button {
                 width: 150px;
                 height: 150px;
@@ -21,6 +25,10 @@
                 margin: 5px;
                 padding: 0px;
                 overflow: hidden;
+                margin-top: 20px;
+                position: relative;
+                z-index: 1;
+                transition: transform 120ms ease, box-shadow 120ms ease;
             }
 
             .game-labels {
@@ -34,11 +42,18 @@
                 position: absolute;
                 white-space: normal;
                 overflow-wrap: break-word;
-                word-break: break-all;
+                margin-bottom: 50px;
+                background-color: rgb(15, 15, 15, 0.5);
+                overflow: hidden;
+                pointer-events: none;
+                z-index: 3;
+                transition: height 120ms ease;
             }
 
             .button-divs {
                 display: inline-block;
+                position: relative;
+                vertical-align: top;
             }
 
             .button-images {
@@ -55,6 +70,7 @@
                 height: 80px;
                 border: solid 2px #4d664d;
                 border-radius: 40px;
+                transition: transform 120ms ease, box-shadow 120ms ease;
             }
 
             #changelog img {
@@ -72,6 +88,7 @@
                 right: 840px;
                 top: 29px;
             }
+
         </style>
     </head>
 
@@ -95,7 +112,16 @@
             new Button('/2048', '2048/logo2048.png', '2048'),
             new Button('/snake', 'snake/logoSnake.png', 'Snake'),
             new Button('/stack', 'stack/logoStack.png', 'Stack'),
-            new Button('/alchemy', 'index/testing.png', 'Alchemy')
+            new Button('/alchemy', 'alchemy/logoAlchemy.png', 'Alchemy'),
+            new Button('/wordle', 'wordle/logoWordle.png', 'Wordle'),
+            new Button('#', 'index/wip2.png', 'Solitaire'),
+            new Button('#', 'index/wip2.png', 'Pac-Man'),
+            new Button('#', 'index/postponed2.png', 'Virtual Pet'),
+            new Button('#', 'index/postponed2.png', 'Minesweeper'),
+            new Button('#', 'index/postponed2.png', 'Tetris'),
+            new Button('#', 'index/postponed2.png', 'Rock, Paper, Scissors'),
+            new Button('#', 'index/postponed2.png', 'Tic Tac Toe'),
+            new Button('#', 'index/postponed2.png', 'Uno'),
         ];
 
         buttons.forEach(button => {
@@ -129,9 +155,10 @@
 
             buttonElement.addEventListener('mouseover', () => {
                 buttonElement.style.transform = 'scale(0.95)';
-                buttonElement.style.boxShadow = '0 0 10px #4d664d';
-                labelBox.style.height = '100px';
+                buttonElement.style.boxShadow = '0 0 15px #4d664d';
                 label.innerHTML = fullText;
+                var expandedHeight = Math.max(20, labelBox.scrollHeight);
+                labelBox.style.height = expandedHeight + 'px';
             });
             buttonElement.addEventListener('mouseout', () => {
                 buttonElement.style.transform = 'scale(1)';
@@ -146,46 +173,21 @@
             document.body.appendChild(buttonDiv);
         });
 
-        // var labels = {}
-        // Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-        //     labelText = label.innerHTML;
-        //     labels[label.id] = labelText;
-        // });
-
-        // function limitTextLength(text, maxLength) {
-        //     Array.from(document.getElementsByClassName('game-labels')).forEach(label => {
-        //         if (label.textContent.length >= 18) {
-        //             var fullText = label.innerHTML;
-        //             label.innerHTML = fullText.substring(0, 15) + '...';
-        //         }
-        //     });
-        // }
-
-        // Array.from(document.getElementsByClassName('game-button')).forEach(button => {
-        //     button.addEventListener('mouseover', () => {
-        //         button.style.transform = 'scale(0.95)';
-        //         button.style.boxShadow = '0 0 10px #4d664d';
-        //         currentButton = button.id;
-        //         var label = document.getElementById('label-' + currentButton);
-        //         var labelBox = document.getElementById('label-box-' + currentButton);
-        //         labelBox.style.height = '100px';
-        //         label.innerHTML = labels[label.id];
-        //     });
-        //     button.addEventListener('mouseout', () => {
-        //         button.style.transform = 'scale(1)';
-        //         button.style.boxShadow = 'none';
-        //         var labelBox = document.getElementById('label-box-' + button.id);
-        //         labelBox.style.height = '20px';
-        //         limitTextLength();
-        //     });
-        // });
+        let changeLogButton = document.getElementById('changelog');
+        changeLogButton.addEventListener('mouseover', () => {
+            changeLogButton.style.transform = 'scale(0.95)';
+            changeLogButton.style.boxShadow = '0 0 15px #4d664d';
+        });
+        changeLogButton.addEventListener('mouseout', () => {
+            changeLogButton.style.transform = 'scale(1)';
+            changeLogButton.style.boxShadow = 'none';
+        });
 
         // function gameLoop() {
 
         //     requestAnimationFrame(gameLoop);
         // }
 
-        limitTextLength();
         // gameLoop();
 
     </script>

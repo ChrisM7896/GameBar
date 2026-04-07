@@ -29,6 +29,7 @@
                 text-shadow: 2px 2px 3px rgb(13, 71, 71);
                 font-weight: bold;
                 font-size: 1.2em;
+                transition: transform 120ms ease, box-shadow 120ms ease;
             }
 
             #descField,
@@ -83,7 +84,7 @@
                 float: right;
             }
 
-            .tileImgs {
+            .sprites {
                 width: 30px;
                 height: 30px;
                 margin: 2px;
@@ -153,6 +154,23 @@
         button.addEventListener('mouseout', () => {
             button.style.transform = 'scale(1)';
             button.style.boxShadow = 'none';
+        });
+
+
+        function play() {
+            let isConfirmed = window.confirm('Are you sure you want to play this game? It will cost <%- cost %> game points.');
+
+            if (isConfirmed) {
+                socket.emit('playGame', { game: '<%- data.game %>', cost: '<%- cost %>', user: '<%- user %>' });
+            }
+        }
+
+        socket.on('relocate', () => {
+            window.location.href = `/game_${'<%- data.game %>'.toLowerCase()}`;
+        });
+
+        socket.on('insufficientFunds', () => {
+            alert('You do not have enough game points to play this game.');
         });
     </script>
 

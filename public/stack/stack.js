@@ -195,10 +195,6 @@ function gameOver(finalPoints) {
     block = null
 
     displayMessage(`Game Over! Final Score: ${finalPoints}`)
-
-    document.getElementById("perfectCounter").style.display = "none"
-    document.getElementById("modeDisplay").style.display = "none"
-    document.getElementById("modeSelection").style.display = "block"
 }
 
 //handle stacking logic when space bar is pressed

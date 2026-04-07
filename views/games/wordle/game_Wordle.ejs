@@ -1,0 +1,257 @@
+<%- include('../../partials/header') %>
+    <title>GameBar - Wordle</title>
+    <style>
+        #partials-header-version {
+            right: 855px;
+            top: 29px;
+        }
+
+        .formInputs {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 5px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            color: white;
+        }
+
+        .formInputs:disabled {
+            background-color: #151b1b;
+            color: #000000;
+        }
+
+        #Game {
+            text-align: center;
+        }
+
+        #message {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        #alert {
+            font-size: 16px;
+            color: red;
+            margin-top: 10px;
+            text-shadow: none;
+        }
+    </style>
+    </head>
+
+    <body>
+        <div id="Game">
+            <form id="Set1" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="1-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="1-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="1-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="1-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="1-letter5" disabled="true">
+            </form>
+            <form id="Set2" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="2-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="2-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="2-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="2-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="2-letter5" disabled="true">
+
+            </form>
+            <form id="Set3" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="3-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="3-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="3-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="3-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="3-letter5" disabled="true">
+
+            </form>
+            <form id="Set4" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="4-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="4-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="4-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="4-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="4-letter5" disabled="true">
+
+            </form>
+            <form id="Set5" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="5-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="5-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="5-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="5-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="5-letter5" disabled="true">
+
+            </form>
+            <form id="Set6" onkeydown="check(event)" autocomplete="off">
+                <input class="formInputs" type="text" maxlength="1" id="6-letter1" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="6-letter2" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="6-letter3" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="6-letter4" disabled="true">
+                <input class="formInputs" type="text" maxlength="1" id="6-letter5" disabled="true">
+            </form>
+
+            <div id="message">Try to guess the word in 6 guesses or less!</div>
+            <div id="alert"></div>
+        </div>
+
+        <div id="alphabet" style="position: fixed; bottom: 10px; width: 100%; text-align: center;"></div>
+    </body>
+    <script>
+        let dictionary;
+        let correct;
+
+        socket.emit('getDictionary');
+        socket.on('dictReturn', (dict) => {
+            dictionary = dict;
+            correct = getCorrect();
+
+            const firstSet = document.getElementById("Set1");
+            firstSet.querySelectorAll("input").forEach(input => input.disabled = false)
+        });
+
+        let aphabet = document.getElementById("alphabet")
+        lettersList = "QWERTYUIOPASDFGHJKLZXCVBNM";
+        for (let letter of lettersList) {
+            const letterElement = document.createElement("div");
+            letterElement.textContent = letter;
+            letterElement.style.width = "35px";
+            letterElement.style.height = "35px";
+            letterElement.style.margin = "3px";
+            letterElement.style.display = "inline-block";
+            letterElement.style.border = "1px solid #4d664d";
+            letterElement.style.lineHeight = "35px";
+            letterElement.style.backgroundColor = "rgb(23, 34, 34)";
+            letterElement.style.textAlign = "center";
+            letterElement.style.textShadow = "none";
+            letterElement.style.fontFamily = "Arial, sans-serif";
+            letterElement.id = letter;
+
+            alphabet.appendChild(letterElement);
+            if (letter === "P" || letter === "L") {
+                alphabet.appendChild(document.createElement("br"));
+            }
+        }
+
+
+        var guessCount = 0;
+        var alert = document.getElementById("alert");
+
+        // Gets the correct answer
+        function getCorrect() {
+            const randomIndex = Math.floor(Math.random() * dictionary.length);
+            return dictionary[randomIndex];
+        }
+
+        // Checks if user's input matches the correct answer, on form submission
+        function check(event) {
+            alert.innerHTML = "";
+            if (event.key === "Enter" && guessCount < 6) {
+                event.preventDefault();
+                let guess = "";
+
+
+                // form validation
+                for (let i = 1; i <= 5; i++) {
+                    let letter = document.getElementById(`${guessCount + 1}-letter${i}`).value.toUpperCase();
+                    guess += document.getElementById(`${guessCount + 1}-letter${i}`).value.toUpperCase();
+                }
+
+                if (guess.length !== 5) {
+                    alert.innerHTML = "Word must contain 5 letters. Please try again.";
+                    return;
+                }
+
+                if (!dictionary.includes(guess)) {
+                    alert.innerHTML = "Word not found in dictionary. Please try again.";
+                    return;
+                }
+
+                // Provide hints
+                var goldCount = 0;
+                for (let i = 0; i < 5; i++) {
+                    const letter = guess[i];
+                    const correctLetter = correct[i];
+                    const element = document.getElementById(`${guessCount + 1}-letter${i + 1}`);
+
+                    if (letter === correctLetter) {
+                        element.style.backgroundColor = "#6dffc2";
+                        document.getElementById(letter).style.backgroundColor = "#6dffc2";
+                    } else if (correct.includes(letter)) {
+                        const letterCount = guess.split(letter).length - 1;
+                        const correctCount = correct.split(letter).length - 1;
+
+                        if (letterCount > correctCount) {
+                            if (goldCount >= correctCount) {
+                                element.style.backgroundColor = "#394238";
+                            } else {
+                                if (document.getElementById(letter).style.backgroundColor !== "#6dffc2") {
+                                    element.style.backgroundColor = "#babf56";
+                                    document.getElementById(letter).style.backgroundColor = "#babf56";
+                                } else {
+                                    element.style.backgroundColor = "#394238";
+                                }
+                                goldCount++;
+                            }
+                        } else {
+                            element.style.backgroundColor = "#babf56";
+
+                            if (document.getElementById(letter).style.backgroundColor !== "#6dffc2") {
+                                document.getElementById(letter).style.backgroundColor = "#babf56";
+                            }
+                        }
+                    } else {
+                        element.style.backgroundColor = "#394238";
+                        document.getElementById(letter).style.backgroundColor = "#394238";
+                    }
+                }
+
+                // Win / Loss
+                if (guess === correct) {
+                    alert.innerHTML = "Congratulations! You've guessed the word!";
+                    alert.style.color = "green";
+
+                    let currentSet = document.getElementById(`Set${guessCount + 1}`);
+                    currentSet.querySelectorAll("input").forEach(input => input.disabled = true);
+
+                    return
+                } else {
+
+                    guessCount++;
+                    let currentSet = document.getElementById(`Set${guessCount}`);
+                    let nextSet = document.getElementById(`Set${guessCount + 1}`);
+
+                    currentSet.querySelectorAll("input").forEach(input => input.disabled = true);
+                    if (guessCount < 6) {
+                        nextSet.querySelectorAll("input").forEach(input => input.disabled = false);
+
+                        nextSet.querySelector("input").focus();
+                    } else {
+                        alert.innerHTML = `Game Over! The correct word was ${correct}.`;
+                        alert.style.color = "red";
+                    }
+
+
+                }
+            } else if (event.key === "Backspace") {
+                const currentInput = event.target;
+                if (currentInput.value === "") {
+                    currentInput.previousElementSibling?.focus();
+                }
+            } else if (!/^[a-zA-Z]$/.test(event.key)) {
+                if (event.key !== "Tab") {
+                    event.preventDefault();
+                }
+            } else {
+                const currentInput = event.target;
+                currentInput.value = event.key.toUpperCase();
+                currentInput.nextElementSibling?.focus();
+                event.preventDefault();
+            }
+        }
+
+
+
+    </script>
+
+    </html>
