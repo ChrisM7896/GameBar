@@ -172,6 +172,11 @@
         socket.on('insufficientFunds', () => {
             alert('You do not have enough game points to play this game.');
         });
+
+        //if window is reloaded, emit 'leaveGame' event to server
+        window.addEventListener('unload', (event) => {
+            socket.emit('leaveGame')
+        });
     </script>
 
     </html>

@@ -49,7 +49,6 @@ function isAuthenticated(req, res, next) {
 
 // SOCKET.IO CLIENT TO AUTH SERVER
 
-
 const server = http.createServer(app);
 const io = new Server(server);
 let clientID;
@@ -59,6 +58,10 @@ const authSocket = ioClient(AUTH_URL, {
         api: API_KEY
     }
 });
+
+// VARIABLES
+
+let paid = false;
 
 // ROUTES
 app.get('/login', (req, res) => {
@@ -94,8 +97,6 @@ app.get('/', isAuthenticated, (req, res) => {
             res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
         }
     });
-
-
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
@@ -156,6 +157,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         
         </details>`
     }
+
     res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.4', data: data });
 });
 
@@ -305,23 +307,48 @@ app.get('/wordle', isAuthenticated, (req, res) => {
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
-    res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, pageName: '2048', version: 'v1.0.2' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, pageName: '2048', version: 'v1.0.2' });
+    }
 });
 
 app.get('/game_snake', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
     res.render('games/snake/game_snake', { user: req.session.user, gp: req.session.gp, pageName: 'Snake', version: 'v1.0.1' });
+    }
 });
 
 app.get('/game_stack', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
     res.render('games/stack/game_stack', { user: req.session.user, gp: req.session.gp, pageName: 'Stack', version: 'v1.0.0' });
+    }
 });
 
 app.get('/game_alchemy', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
     res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, pageName: 'Alchemy', version: 'v1.1.1' });
+    }
 });
 
 app.get('/game_wordle', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
     res.render('games/wordle/game_wordle', { user: req.session.user, gp: req.session.gp, pageName: 'Wordle', version: 'v1.0.0' });
+    }
 });
 
 app.get('/logout', (req, res) => {
@@ -367,6 +394,7 @@ io.on('connection', (socket) => {
         }, 1000);
     });
 
+
     socket.on('playGame', (data) => {
         let user = data.user;
         let cost = parseInt(data.cost);
@@ -381,11 +409,18 @@ io.on('connection', (socket) => {
                     if (err) {
                         return console.error(err.message);
                     } else {
+                        //set paid to true, allowing relocate to function properly
+                        paid = true;
                         socket.emit('relocate')
                     }
                 });
             }
         });
+    });
+
+    // on unload, set paid back to false, preventing users from just refreshing the page to play games for free
+    socket.on('leaveGame', () => {
+        paid = false;
     });
 
     // GAMES' SERVERSIDE LOGIC
