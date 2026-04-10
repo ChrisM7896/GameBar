@@ -10,6 +10,7 @@ const sqlite3 = require('sqlite3').verbose();
 const SQLiteStore = require('connect-sqlite3')(session);
 const http = require('http');
 const datamuse = require('datamuse');
+const { on } = require('cluster');
 
 // DATABASE SETUP
 const db = new sqlite3.Database('./db/app.db', (err) => {
@@ -49,7 +50,6 @@ function isAuthenticated(req, res, next) {
 
 // SOCKET.IO CLIENT TO AUTH SERVER
 
-
 const server = http.createServer(app);
 const io = new Server(server);
 let clientID;
@@ -60,6 +60,9 @@ const authSocket = ioClient(AUTH_URL, {
     }
 });
 
+// VARIABLES AND LISTS FOR ONETIME GAME LOGIC
+let paid = false;
+
 // ROUTES
 app.get('/login', (req, res) => {
     if (req.query.token) {
@@ -67,16 +70,35 @@ app.get('/login', (req, res) => {
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
 
-
-
         // SAVE USER TO DATABSE IF NOT EXISTS
-        db.run('INSERT OR IGNORE INTO users (username) VALUES (?)', [tokenData.displayName], function (err) {
+        db.get('SELECT id FROM users WHERE username = ?', [tokenData.displayName], function (err, row) {
             if (err) {
                 return console.error(err.message);
             }
-            console.log(`User ${tokenData.displayName} saved to database.`);
-            res.redirect('/');
+
+            if (!row) {
+                db.run('INSERT INTO users (username) VALUES (?)', [tokenData.displayName], function (err) {
+                    if (err) {
+                        return console.error(err.message);
+                    }
+                    console.log(`User ${tokenData.displayName} saved to database.`);
+                });
+
+                // Create a onetime entry for the new user
+                db.run(
+                    'INSERT OR IGNORE INTO onetime (user_id) VALUES ((SELECT id FROM users WHERE username = ?))',
+                    [tokenData.displayName],
+                    function (err) {
+                        if (err) {
+                            return console.error(err.message);
+                        }
+                        console.log(`Onetime entry created for user ${tokenData.displayName}.`);
+                    }
+                );
+            }
         });
+
+        res.redirect('/');
     } else {
         res.redirect(`${AUTH_URL}/oauth?redirectURL=${THIS_URL}`);
     };
@@ -91,15 +113,13 @@ app.get('/', isAuthenticated, (req, res) => {
             console.error(err.message);
         } else {
             req.session.gp = row ? row.gp : 0;
-            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.6' });
+            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
         }
     });
-
-
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.6' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -121,7 +141,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </details>`,
         game: '2048',
         preview: `<img id="previewImg" src="/2048/2048preview.png" alt="2048 preview" height="500">`,
-        playButton: `<button id="button" onclick="play()"">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Use the arrow keys to move the tiles. When two tiles with the same number touch, they merge into a
         greater one! The goal is to create a tile with the number 2048. Be careful, though: if the board fills
         up and you can't make any more moves, it's game over!`,
@@ -154,9 +174,10 @@ app.get('/2048', isAuthenticated, (req, res) => {
         
         
         
-        </details>`
+        </details>`,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.6', data: data });
+
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.3.4', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -194,7 +215,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 
                 </details>`,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.3.6', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.3.4', data: data });
 }
 );
 
@@ -228,11 +249,10 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the block is perfectly aligned, check if the last five blocks are all perfectly aligned. If not, award one extra point and increase the perfect counter. If so, award four extra points and clear the perfect counter.</li>
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>
-            `
+            `,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.3.6', data: data });
-}
-);
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.3.4', data: data });
+});
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
     const data = {
@@ -258,7 +278,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
             </details>`,
         game: 'Alchemy',
         preview: `<img id="previewImg" src="/alchemy/alchemypreview.png" alt="Alchemy Preview" height="500">`,
-        playButton: `<button id="button" onclick="play()">Buy</button>`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Drag and drop elements onto the game area to combine them. If the combination is correct, a new element will be created! You can also double click an element to spawn another one, and right click to delete it. Try to discover them all!`,
         specifics: ` <details>
                 <summary class="summaries">Specifics</summary>
@@ -271,9 +291,9 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">On element drop: Detect if dropped on another element, the sidebar, or the game area. </li>
                 <li class="innerli">If dropped on another element, check if the combination of those 2 elements is valid. If true, create the new element on top of the 2 old ones, and check if the player has unlocked a new element. If they have, add it to the sidebar.</li>
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
-                </details>`
+                </details>`,
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.3.6', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.3.4', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -301,35 +321,62 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 <li class="innerli">Player gets 6 total guesses to find the word. If they fail, they lose and the correct word is revealed</li>
 
                 </details>
-        </details>`
+        </details>`,
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.3.6', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.3.4', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
-    res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, pageName: '2048', version: 'v1.0.2' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, pageName: '2048', version: 'v1.0.2' });
+    }
 });
 
 app.get('/game_snake', isAuthenticated, (req, res) => {
-    res.render('games/snake/game_snake', { user: req.session.user, gp: req.session.gp, pageName: 'Snake', version: 'v1.0.1' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/snake/game_snake', { user: req.session.user, gp: req.session.gp, pageName: 'Snake', version: 'v1.0.1' });
+    }
 });
 
 app.get('/game_stack', isAuthenticated, (req, res) => {
-    res.render('games/stack/game_stack', { user: req.session.user, gp: req.session.gp, pageName: 'Stack', version: 'v1.0.0' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/stack/game_stack', { user: req.session.user, gp: req.session.gp, pageName: 'Stack', version: 'v1.0.0' });
+    }
 });
 
 app.get('/game_alchemy', isAuthenticated, (req, res) => {
-    res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, pageName: 'Alchemy', version: 'v1.2.0' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, pageName: 'Alchemy', version: 'v1.1.1' });
+    }
 });
 
 app.get('/game_wordle', isAuthenticated, (req, res) => {
-    res.render('games/wordle/game_wordle', { user: req.session.user, gp: req.session.gp, pageName: 'Wordle', version: 'v1.0.0' });
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.3.4' });
+    } else {
+        res.render('games/wordle/game_wordle', { user: req.session.user, gp: req.session.gp, pageName: 'Wordle', version: 'v1.0.0' });
+    }
 });
 
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 });
+
+// SOCKET ROUTES
 
 var socketReturn = false;
 io.on('connection', (socket) => {
@@ -372,22 +419,86 @@ io.on('connection', (socket) => {
     socket.on('playGame', (data) => {
         let user = data.user;
         let cost = parseInt(data.cost);
+        let game = data.game.toLowerCase();
+        console.log('Play Game Data:', data);
+        console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
-        db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+        db.get(`SELECT CONVEERT(str, ${game}) FROM onetime WHERE user_id = (SELECT id FROM users WHERE username = ?)`, [user], (err, row) => {
             if (err) {
-                console.error(err.message);
-            } else if (row.gp < cost) {
-                socket.emit('insufficientFunds');
-            } else {
-                db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                console.error(`The game ${game} is not in the onetime table, or there was an error retrieving it. Continuing as a normal game.`);
+                //if the game is not in the onetime table, proceed with normal transaction
+                return db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
                     if (err) {
                         return console.error(err.message);
+                    }
+
+                    if (row.gp < cost) {
+                        socket.emit('insufficientFunds', cost);
                     } else {
-                        socket.emit('relocate')
+                        socket.emit('confirmCost', cost);
+
+                        socket.on('confirmPlay', () => {
+                            db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                if (err) {
+                                    return console.error(err.message);
+                                }
+                                paid = true;
+                                socket.emit('relocate');
+                            });
+                        });
                     }
                 });
             }
+
+            //if the game is in the onetime table, check if the user has already paid for it
+            if (row && row[game] === 1) {
+                //game is already paid for, skip GP deduction
+                console.log(`User ${user} has already paid for the onetime game ${game}.`);
+                paid = true;
+                socket.emit('onetimePaid');
+            } else if (row && row[game] === 0) {
+                //check if the user has enough gp
+                db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                    if (err) {
+                        return console.error(err.message);
+                    }
+
+                    if (row.gp < cost) {
+                        socket.emit('insufficientFunds');
+                    } else {
+                        // Deduct GP and update the onetime table if necessary
+                        socket.emit('confirmCost', cost);
+
+                        socket.on('confirmPlay', () => {
+                            db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                if (err) {
+                                    return console.error(err.message);
+                                }
+
+                                // Update the onetime table if the game exists
+                                db.run(`UPDATE onetime SET ${game} = 1 WHERE user_id = (SELECT id FROM users WHERE username = ?)`, [user], function (err) {
+                                    if (err) {
+                                        return console.error(err.message);
+                                    }
+                                    console.log(`Set user ${user} as having paid for onetime game ${game}.`);
+                                });
+
+                                // Allow relocate to function properly
+                                paid = true;
+                                socket.emit('relocate');
+                            });
+                        });
+                    }
+                });
+            } else {
+                console.log('something went wrong')
+            }
         });
+    });
+
+    //on unload, set paid back to false, preventing users from just refreshing the page to play games for free
+    socket.on('leaveGame', () => {
+        paid = false;
     });
 
     // GAMES' SERVERSIDE LOGIC
