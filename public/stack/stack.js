@@ -54,7 +54,7 @@ class Block {
                 speed = 0
         }
 
-        const colors = ['#D6E8E3', '#A6DFCF', '#6DFFC2', '#5fd182', '#3FA85C', '#18A840', '#18A8A4', '#189995', '#13845F', '#0F4231']
+        const colors = ['#D6E8E3', '#A6DFCF', '#6DFFC2', '#5FD182', '#3FA85C', '#18A840', '#18A8A4', '#189995', '#13845F', '#0F4231']
         const color = colors[blocksList.length % colors.length] //iterate through colors based on the number of blocks stacked
 
         const block = new Block(0, lastBlock.y - 50, lastBlock.width, 50, color, speed)

@@ -150,19 +150,6 @@
             text-align: center;
         }
 
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0f0f0f;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #4d664d;
-            border-radius: 5px;
-        }
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -313,8 +300,6 @@
         "We own the finish line",
         "I prefer Kanye",
         "Mama mia that's a spicy meatball",
-        "Also try Geometry Dash!",
-        "discord.gg/hNnsavWR67",
     ];
 
     let splashTextElement = document.getElementById('partials-header-splash-text');
@@ -332,7 +317,7 @@
         splashTextElement.style.paddingLeft = '50px';
         splashTextElement.style.overflow = 'visible';
     }
-
+    
     let user = JSON.parse('<%- JSON.stringify(user) %>');
     // GAME POINTS LOGIC
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
