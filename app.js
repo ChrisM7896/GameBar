@@ -417,7 +417,7 @@ io.on('connection', (socket) => {
         console.log('Play Game Data:', data);
         console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
-        db.get(`SELECT CONVEERT(str, ${game}) FROM onetime WHERE user_id = (SELECT id FROM users WHERE username = ?)`, [user], (err, row) => {
+        db.get(`SELECT ${game} FROM onetime WHERE user_id = (SELECT id FROM users WHERE username = ?)`, [user], (err, row) => {
             if (err) {
                 console.error(`The game ${game} is not in the onetime table, or there was an error retrieving it. Continuing as a normal game.`);
                 //if the game is not in the onetime table, proceed with normal transaction
@@ -460,7 +460,7 @@ io.on('connection', (socket) => {
                     if (row.gp < cost) {
                         socket.emit('insufficientFunds');
                     } else {
-                        // Deduct GP and update the onetime table if necessary
+                        //deduct GP and update the onetime table if necessary
                         socket.emit('confirmCost', cost);
 
                         socket.on('confirmPlay', () => {
@@ -469,7 +469,7 @@ io.on('connection', (socket) => {
                                     return console.error(err.message);
                                 }
 
-                                // Update the onetime table if the game exists
+                                //update the onetime table if the game exists
                                 db.run(`UPDATE onetime SET ${game} = 1 WHERE user_id = (SELECT id FROM users WHERE username = ?)`, [user], function (err) {
                                     if (err) {
                                         return console.error(err.message);
@@ -477,7 +477,7 @@ io.on('connection', (socket) => {
                                     console.log(`Set user ${user} as having paid for onetime game ${game}.`);
                                 });
 
-                                // Allow relocate to function properly
+                                //allow relocate to function properly
                                 paid = true;
                                 socket.emit('relocate');
                             });
