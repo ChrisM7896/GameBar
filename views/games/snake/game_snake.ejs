@@ -317,6 +317,7 @@
 
             // Update the snake's body segments
             for (let i = playerBody.length - 1; i > 0; i--) {
+                console.log(playerBody)
                 playerBody[i] = playerBody[i - 1]; // Shift each segment to the position of the previous one
             }
 
@@ -373,6 +374,7 @@
         }
         // Function to handle player death
         function death(collisions) {
+            console.log("Player died due to: " + collisions);
             gameOver = true;
         }
     </script>
