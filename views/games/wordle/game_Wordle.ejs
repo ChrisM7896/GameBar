@@ -223,20 +223,16 @@
                     if (letter === correctLetter) {
                         element.style.backgroundColor = "rgb(109, 255, 194)";
                         document.getElementById(letter).style.backgroundColor = "rgb(109, 255, 194)";
-                        console.log(document.getElementById(letter).style.backgroundColor);
                     } else if (correct.includes(letter)) {
                         element.style.backgroundColor = "rgb(186, 191, 86)";
-                        console.log(document.getElementById(letter).style.backgroundColor);
                         if (document.getElementById(letter).style.backgroundColor !== "rgb(109, 255, 194)") {
                             document.getElementById(letter).style.backgroundColor = "rgb(186, 191, 86)";
                         }
                     } else {
                         element.style.backgroundColor = "rgb(57, 66, 56)";
-                        console.log(document.getElementById(letter).style.backgroundColor);
                         if (document.getElementById(letter).style.backgroundColor !== "rgb(109, 255, 194)" && document.getElementById(letter).style.backgroundColor !== "rgb(186, 191, 86)") {
                             document.getElementById(letter).style.backgroundColor = "rgb(57, 66, 56)";
                         }
-                        console.log(document.getElementById(letter).style.backgroundColor);
                     }
                 }
 
