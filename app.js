@@ -113,13 +113,13 @@ app.get('/', isAuthenticated, (req, res) => {
             console.error(err.message);
         } else {
             req.session.gp = row ? row.gp : 0;
-            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.4.1' });
+            res.render('index', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.4.2' });
         }
     });
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.4.1' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, pageName: 'Gamebar', version: 'v0.4.2' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -176,7 +176,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.4.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 45, pageName: 'Gamebar', version: 'v0.4.2', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -215,7 +215,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.4.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 25, pageName: 'Gamebar', version: 'v0.4.2', data: data });
 }
 );
 
@@ -252,7 +252,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.4.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 30, pageName: 'Gamebar', version: 'v0.4.2', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -294,7 +294,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.4.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 799, pageName: 'Gamebar', version: 'v0.4.2', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -329,7 +329,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.4.1', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, cost: 20, pageName: 'Gamebar', version: 'v0.4.2', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -429,7 +429,7 @@ io.on('connection', (socket) => {
         console.log('Play Game Data:', data);
         console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
-        db.get(`SELECT ${game} FROM onetime WHERE user_id = ?`, [user], (err, row) => {
+        db.get(`SELECT ? FROM onetime WHERE user_id = ?`, [game, user], (err, row) => {
             if (err) {
                 console.error(`The game ${game} is not in the onetime table, or there was an error retrieving it.Continuing as a normal game.`);
                 //if the game is not in the onetime table, proceed with normal transaction
@@ -450,6 +450,7 @@ io.on('connection', (socket) => {
                                 }
                                 paid = true;
                                 socket.emit('relocate');
+                                console.log('not in onetime')
                             });
                         });
                     }
@@ -457,12 +458,13 @@ io.on('connection', (socket) => {
             }
 
             //if the game is in the onetime table, check if the user has already paid for it
-            if (row && row[game] === 1) {
+            if (row && row[game] == 1) {
                 //game is already paid for, skip GP deduction
                 console.log(`User ${user} has already paid for the onetime game ${game}.`);
                 paid = true;
                 socket.emit('onetimePaid');
-            } else if (row && row[game] === 0) {
+                console.loog('onetime, paid');
+            } else if (row && row[game] == 0) {
                 //check if the user has enough gp
                 db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
                     if (err) {
@@ -492,6 +494,7 @@ io.on('connection', (socket) => {
                                 //allow relocate to function properly
                                 paid = true;
                                 socket.emit('relocate');
+                                console.log('in onetime, not paid');
                             });
                         });
                     }
@@ -514,6 +517,7 @@ io.on('connection', (socket) => {
                                 }
                                 paid = true;
                                 socket.emit('relocate');
+                                console.log('In onetime, not a number');
                             });
                         });
                     }
