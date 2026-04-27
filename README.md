@@ -14,33 +14,19 @@ This should create package.json and package-lock.json files.
 Under dependencies, you should see something like this:
 
 >  "dependencies": {
-> 
->      "connect-sqlite3": "^latest-version",
-> 
->      "datamuse": "^latest-version",
-> 
->      "dotenv": "^latest-version",
-> 
->      "ejs": "^latest-version",
-> 
->      "express": "^latest-version",
-> 
->      "express-session": "^latest-version",
-> 
->      "jsonwebtoken": "^latest-version",
-> 
->      "multer": "^latest-version",
-> 
->      "nodemon": "^latest-version",
->   
->      "socket.io": "^latest-version",
-> 
->      "socket.io-client": "^latest-version",
-> 
->      "sqlite3": "^latest-version",
-> 
->      "winston": "^latest-version"
-> 
+>     "connect-sqlite3": "^latest-version",
+>     "datamuse": "^latest-version",
+>     "dotenv": "^latest-version",
+>     "ejs": "^latest-version",
+>     "express": "^latest-version",
+>     "express-session": "^latest-version",
+>     "jsonwebtoken": "^latest-version",
+>     "multer": "^latest-version",
+>     "nodemon": "^latest-version",
+>     "socket.io": "^latest-version",
+>     "socket.io-client": "^latest-version",
+>     "sqlite3": "^latest-version",
+>     "winston": "^latest-version"
 >  }
 
 ***
