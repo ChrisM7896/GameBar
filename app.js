@@ -403,11 +403,11 @@ io.on('connection', (socket) => {
             amount: amount,
             reason: 'Gamebar Transaction',
             pin: pin,
+            pool: true
         };
 
         const gamePoints = reward;
         const username = user;
-        console.log(data);
 
         authSocket.emit('transferDigipogs', data);
 
