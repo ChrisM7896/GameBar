@@ -131,7 +131,7 @@
             transition: transform 120ms ease, box-shadow 120ms ease;
         }
 
-        #gamePointsDisplay {
+        #gamePointsDisplayDiv {
             text-align: center;
             margin-top: 15px;
         }
@@ -154,6 +154,36 @@
             width: 120px;
             height: 120px;
         }
+
+        .gamePointsDisplay-button {
+            padding: 5px 10px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #4d664d;
+        }
+
+        #gamePointsDisplay-pinInput {
+            padding: 5px;
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            background-color: rgb(23, 34, 34);
+            color: #4d664d;
+            cursor: pointer;
+        }
+
+        #gamePointsDisplay-pinInput::placeholder {
+            color: #4d664d;
+            opacity: 0.7;
+        }
+
+        #gamePointsDisplay-pinInput:focus {
+            outline: none;
+            border-color: #0d4747;
+            box-shadow: 0 0 5px #4d664d;
+        }
+
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -188,7 +218,6 @@
             <h3 id="partials-header-gamepoints-label">Game Points</h3>
         </div>
 
-
         <div id="partials-header-splash-text-container">
             <div id="partials-header-splash-text"></div>
         </div>
@@ -200,14 +229,28 @@
     <div id="gamePointsWindow">
         <h2 style="text-align: center;">Game Points Shop</h2>
         <div id="purchaseButtonDiv">
-            <button class="purchaseButtons" onclick="buyPoints(100, 99)"><img class="partials-header-gp-imgs" src="/index/gp100.png" alt="100 Game Points"></button>
-            <button class="purchaseButtons" onclick="buyPoints(210, 199)"><img class="partials-header-gp-imgs" src="/index/gp210.png" alt="210 Game Points"></button>
-            <button class="purchaseButtons" onclick="buyPoints(385, 349)"><img class="partials-header-gp-imgs" src="/index/gp385.png" alt="385 Game Points"></button>
-            <button class="purchaseButtons" onclick="buyPoints(840, 699)"><img class="partials-header-gp-imgs" src="/index/gp840.png" alt="840 Game Points"></button>
-            <button class="purchaseButtons" onclick="buyPoints(1300, 999)"><img class="partials-header-gp-imgs" src="/index/gp1300.png" alt="1300 Game Points"></button>
+            <button class="purchaseButtons" onclick="buyPoints(100, 99)"><img class="partials-header-gp-imgs"
+                    src="/index/gp100.png" alt="100 Game Points"></button>
+            <button class="purchaseButtons" onclick="buyPoints(210, 199)"><img class="partials-header-gp-imgs"
+                    src="/index/gp210.png" alt="210 Game Points"></button>
+            <button class="purchaseButtons" onclick="buyPoints(385, 349)"><img class="partials-header-gp-imgs"
+                    src="/index/gp385.png" alt="385 Game Points"></button>
+            <button class="purchaseButtons" onclick="buyPoints(840, 699)"><img class="partials-header-gp-imgs"
+                    src="/index/gp840.png" alt="840 Game Points"></button>
+            <button class="purchaseButtons" onclick="buyPoints(1300, 999)"><img class="partials-header-gp-imgs"
+                    src="/index/gp1300.png" alt="1300 Game Points"></button>
         </div>
 
-        <p id="gamePointsDisplay">You have <%- gp %> game points</p>
+        <div id="gamePointsDisplayDiv">
+            <p id="gamePointsDisplay">You have <%- gp %> game points</p>
+            <div id="pinForm" style="display:none;">
+                <p id="transactionPrompt"></p>
+                <input id="gamePointsDisplay-pinInput" type="password" id="pinInput" maxlength="4" pattern="\d{4}"
+                    placeholder="4-digit PIN">
+                <button class="gamePointsDisplay-button" onclick="confirmTransaction()">Confirm</button>
+                <button class="gamePointsDisplay-button" onclick="cancelTransaction()">Cancel</button>
+            </div>
+        </div>
 
         <button id="closeWindow" onclick="gamePointsShop('close')">Close</button>
     </div>
@@ -366,16 +409,38 @@
     // GAME POINTS LOGIC
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     function buyPoints(value, pogs) {
-        let pin = parseInt(prompt(value + " Game Points costs " + pogs + " digipogs. Please enter your PIN if you want to go through with the transaction."), 10);
-        let reward = value;
+        const pinForm = document.getElementById("pinForm")
+        const transactionPrompt = document.getElementById("transactionPrompt");
+        const pinInput = document.getElementById("pinInput");
 
-        if (Number.isInteger(pin)) {
-            socket.emit('transaction', pin, pogs, reward, user);
-        } else {
-            alert("Transaction cancelled.");
-            return;
-        }
+        //toggle pin form
+        pinForm.style.display = 'block';
+        transactionPrompt.innerText = value + " Game Points costs " + pogs + " digipogs. Please enter your PIN to confirm the transaction:";
+        pinInput.value = '';
+        pinInput.focus();
     }
+
+    function confirmTransaction() {
+        const pinForm = document.getElementById("pinForm")
+        const pinInput = document.getElementById("pinInput");
+
+        const pin = parseInt(pinInput.value);
+        const value = transactionPrompt.innerText.split(" ")[0]; // extract the value from the prompt text
+        const pogs = transactionPrompt.innerText.split(" ")[4]; // extract the pog cost from the prompt text
+        let reward = parseInt(value);
+        socket.emit('transaction', pin, pogs, reward, user);
+    }
+
+    function cancelTransaction() {
+        const pinForm = document.getElementById("pinForm")
+
+        pinForm.style.display = 'none';
+        alert("Transaction cancelled.");
+    }
+
+    socket.on("transactionFailure", (responseMessage) => {
+        alert(responseMessage);
+    });
 
     socket.on('transactionSuccess', () => {
         alert("Transaction successful! Your Game Points balance has been updated. Visit/refresh the home page to view the change :)");
