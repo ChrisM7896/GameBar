@@ -160,7 +160,7 @@
                 alert('A game is already open in another tab. Please close that tab to play this game.');
                 window.location.href = '/';
             } else {
-                socket.emit('playGame', { game: '<%- data.game %>', cost: '<%- cost %>', user: '<%- user %>' });
+                socket.emit('playGame', { game: '<%- data.game %>', user: '<%- user %>' });
             }
         }
 
