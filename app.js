@@ -395,8 +395,6 @@ io.on('connection', (socket) => {
     authSocket.on("transferResponse", (response) => {
         console.log("Transfer Response:", response);
         socketReturn = response.success;
-        responseMessage = response.message;
-        console.log(responseMessage);
     });
 
     socket.on('transaction', (pin, amount, reward, user) => {
@@ -415,8 +413,7 @@ io.on('connection', (socket) => {
         authSocket.emit('transferDigipogs', data);
 
         setTimeout(() => {
-            console.log(socketReturn);
-
+            console.log(`Transaction result for user ${username}:`, socketReturn, responseMessage);
             if (socketReturn) {
                 db.run('UPDATE users SET gp = gp + ? WHERE username = ?', [gamePoints, username], function (err) {
                     if (err) {
@@ -425,8 +422,14 @@ io.on('connection', (socket) => {
                     console.log(`Added ${gamePoints} GP to user ${username}.`);
                     socket.emit('transactionSuccess');
                 });
+            } else if (responseMessage) {
+                socket.emit("transactionFailure", responseMessage);
+                console.error('Transaction failed. No GP added.');
+            } else {
+                socket.emit("transactionFailure", "An unknown error occurred during the transaction.");
+                console.error('Transaction failed with an unknown error. No GP added.');
             }
-        }, 1000);
+        }, 5000);
     });
 
     socket.on('playGame', (data) => {

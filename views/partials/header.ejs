@@ -208,6 +208,12 @@
         </div>
 
         <p id="gamePointsDisplay">You have <%- gp %> game points</p>
+        <div id="pinForm" style="display:none;">
+            <p id="transactionPrompt"></p>
+            <input type="password" id="pinInput" maxlength="4" pattern="\d{4}" placeholder="4-digit PIN">
+            <button onclick="confirmTransaction()">Confirm</button>
+            <button onclick="cancelTransaction()">Cancel</button>
+        </div>
 
         <button id="closeWindow" onclick="gamePointsShop('close')">Close</button>
     </div>
@@ -366,16 +372,38 @@
     // GAME POINTS LOGIC
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     function buyPoints(value, pogs) {
-        let pin = parseInt(prompt(value + " Game Points costs " + pogs + " digipogs. Please enter your PIN if you want to go through with the transaction."), 10);
-        let reward = value;
+        const pinForm = document.getElementById("pinForm")
+        const transactionPrompt = document.getElementById("transactionPrompt");
+        const pinInput = document.getElementById("pinInput");
 
-        if (Number.isInteger(pin)) {
-            socket.emit('transaction', pin, pogs, reward, user);
-        } else {
-            alert("Transaction cancelled.");
-            return;
-        }
+        //toggle pin form
+        pinForm.style.display = 'block';
+        transactionPrompt.innerText = value + " Game Points costs " + pogs + " digipogs. Please enter your PIN to confirm the transaction:";
+        pinInput.value = '';
+        pinInput.focus();
     }
+
+    function confirmTransaction() {
+        const pinForm = document.getElementById("pinForm")
+        const pinInput = document.getElementById("pinInput");
+
+        const pin = parseInt(pinInput.value);
+        const value = transactionPrompt.innerText.split(" ")[0]; // extract the value from the prompt text
+        const pogs = transactionPrompt.innerText.split(" ")[4]; // extract the pog cost from the prompt text
+        let reward = parseInt(value);
+        socket.emit('transaction', pin, pogs, reward, user);
+    }
+
+    function cancelTransaction() {
+        const pinForm = document.getElementById("pinForm")
+
+        pinForm.style.display = 'none';
+        alert("Transaction cancelled.");
+    }
+
+    socket.on("transactionFailure", (responseMessage) => {
+        alert(responseMessage);
+    });
 
     socket.on('transactionSuccess', () => {
         alert("Transaction successful! Your Game Points balance has been updated. Visit/refresh the home page to view the change :)");
