@@ -388,12 +388,15 @@ app.get('/logout', (req, res) => {
 // SOCKET ROUTES
 
 var socketReturn = false;
+var responseMessage = '';
 io.on('connection', (socket) => {
     // DIGIPOG TRANSFERS
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     authSocket.on("transferResponse", (response) => {
         console.log("Transfer Response:", response);
         socketReturn = response.success;
+        responseMessage = response.message;
+        console.log(responseMessage);
     });
 
     socket.on('transaction', (pin, amount, reward, user) => {
@@ -412,8 +415,9 @@ io.on('connection', (socket) => {
         authSocket.emit('transferDigipogs', data);
 
         setTimeout(() => {
+            console.log(socketReturn);
+
             if (socketReturn) {
-                console.log(socketReturn);
                 db.run('UPDATE users SET gp = gp + ? WHERE username = ?', [gamePoints, username], function (err) {
                     if (err) {
                         return console.error(err.message);

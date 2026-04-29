@@ -240,7 +240,6 @@
         "69",
         "420",
         "1337",
-        "Cass is racist",
         "Gabby you're late",
         "Hayden get off your phone your girlfriend can wait",
         "Is there a Christian Martian in here?",
@@ -248,7 +247,6 @@
         "WE love capitalism",
         "I should've gotten Pogipedia bro",
         "I'm not paid enough for this",
-        "Chrissy Kirk",
         "#1 CSS<br><br> Dev   elop<br>er",
         "Jubekar",
         "Days since last bug: 0",
@@ -370,7 +368,6 @@
     function buyPoints(value, pogs) {
         let pin = parseInt(prompt(value + " Game Points costs " + pogs + " digipogs. Please enter your PIN if you want to go through with the transaction."), 10);
         let reward = value;
-        console.log(pin);
 
         if (Number.isInteger(pin)) {
             socket.emit('transaction', pin, pogs, reward, user);
