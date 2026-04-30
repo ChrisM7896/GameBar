@@ -245,7 +245,8 @@
             <p id="gamePointsDisplay">You have <%- gp %> game points</p>
             <div id="pinForm" style="display:none;">
                 <p id="transactionPrompt"></p>
-                <input id="gamePointsDisplay-pinInput" type="password" id="pinInput" placeholder="PIN">
+                <input id="gamePointsDisplay-pinInput" type="password" pattern="\d{4}"
+                    placeholder="PIN">
                 <button class="gamePointsDisplay-button" onclick="confirmTransaction()">Confirm</button>
                 <button class="gamePointsDisplay-button" onclick="cancelTransaction()">Cancel</button>
             </div>
@@ -410,7 +411,7 @@
     function buyPoints(value, pogs) {
         const pinForm = document.getElementById("pinForm")
         const transactionPrompt = document.getElementById("transactionPrompt");
-        const pinInput = document.getElementById("pinInput");
+        const pinInput = document.getElementById("gamePointsDisplay-pinInput");
 
         //toggle pin form
         pinForm.style.display = 'block';
@@ -421,7 +422,7 @@
 
     function confirmTransaction() {
         const pinForm = document.getElementById("pinForm")
-        const pinInput = document.getElementById("pinInput");
+        const pinInput = document.getElementById("gamePointsDisplay-pinInput");
 
         const pin = parseInt(pinInput.value);
         const value = transactionPrompt.innerText.split(" ")[0]; // extract the value from the prompt text
