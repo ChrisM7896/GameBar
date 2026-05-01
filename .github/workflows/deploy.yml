@@ -1,0 +1,19 @@
+name: Redeploy Express App on push to Main branch
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  redeploy:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Restart PM2
+        run: |
+            pm2 restart gamebar
