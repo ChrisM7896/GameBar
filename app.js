@@ -257,7 +257,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
     const data = {
-        description: `Based on the popular online game, this singleplayer game challenges player's problem solving and thinking skills (sort of), by challenging them to create new elements from 4 beginner ones. <br><br> This project is the fourth completed Gamebar game, and my personal favorite - Chris`,
+        description: `Based on the popular online game, this singleplayer game challenges player's problem solving and thinking skills (sort of), by challenging them to create new elements from 4 beginner ones. <br><br> This project is the fourth completed Gamebar game, and my personal favorite - Chris<br><br>YOU ONLY NEED TO BUY THIS ONCE TO PLAY IT FOREVER. IF THIS DOESNT WORK, LET CHRIS KNOW`,
         developer: 'Christian Martin',
         changelog: `<details>
                 <summary class="summaries">Changelog</summary>
