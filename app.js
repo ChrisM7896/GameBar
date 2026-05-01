@@ -27,6 +27,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || `http://172.16.3.234:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
+const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
 
 // MIDDLEWARE
 app.set('view engine', 'ejs');
@@ -64,6 +65,39 @@ const authSocket = ioClient(AUTH_URL, {
 let paid = false;
 
 // ROUTES
+
+// GITHUB WEBHOOK - FOR DEPLOYMENT AUTOMATION
+app.post("/github-webhook", express.raw({ type: "application/json" }), (req, res) => {
+    const signature = req.headers["x-hub-signature-256"];
+
+    const expectedSignature =
+        "sha256=" +
+        crypto
+            .createHmac("sha256", WEBHOOK_SECRET)
+            .update(req.body)
+            .digest("hex");
+
+    if (!crypto.timingSafeEqual(
+        Buffer.from(signature || ""),
+        Buffer.from(expectedSignature)
+    )) {
+        return res.status(401).send("Invalid signature");
+    }
+
+    const payload = JSON.parse(req.body.toString());
+
+    //Only deploy from main branch
+    if (payload.ref !== "refs/heads/main") {
+        return res.status(200).send("Ignored non-main branch");
+    }
+
+    res.status(200).send("Deploy started");
+
+    exec("bash /scripts/deploy.sh");
+});
+
+// PAGE ROUTES
+
 app.get('/login', (req, res) => {
     if (req.query.token) {
         let tokenData = jwt.decode(req.query.token);
@@ -491,20 +525,20 @@ io.on('connection', (socket) => {
                     });
                 }
 
-            //if the game is in the onetime table, check if the user has already paid for it
-            console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
-            if (row && row[game] == 1) {
-                //game is already paid for, skip GP deduction
-                console.log(`User ${user} has already paid for the onetime game ${game}.`);
-                paid = true;
-                socket.emit('onetimePaid');
-            } else if (row && row[game] == 0) {
-                //check if the user has enough gp
-                db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
-                    console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
-                    if (err) {
-                        return console.error(err.message);
-                    }
+                //if the game is in the onetime table, check if the user has already paid for it
+                console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
+                if (row && row[game] == 1) {
+                    //game is already paid for, skip GP deduction
+                    console.log(`User ${user} has already paid for the onetime game ${game}.`);
+                    paid = true;
+                    socket.emit('onetimePaid');
+                } else if (row && row[game] == 0) {
+                    //check if the user has enough gp
+                    db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                        console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
+                        if (err) {
+                            return console.error(err.message);
+                        }
 
                         if (row.gp < cost) {
                             socket.emit('insufficientFunds', cost);
@@ -512,21 +546,21 @@ io.on('connection', (socket) => {
                             //deduct GP and update the onetime table if necessary
                             socket.emit('confirmCost', cost);
 
-                        socket.on('confirmPlay', () => {
-                            db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
-                                console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
-                                if (err) {
-                                    return console.error(err.message);
-                                }
-
-                                //update the onetime table if the game exists
-                                db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
-                                    console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                            socket.on('confirmPlay', () => {
+                                db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                    console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
                                     if (err) {
                                         return console.error(err.message);
                                     }
-                                    console.log(`Set user ${user} as having paid for onetime game ${game}.`);
-                                });
+
+                                    //update the onetime table if the game exists
+                                    db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
+                                        console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                                        if (err) {
+                                            return console.error(err.message);
+                                        }
+                                        console.log(`Set user ${user} as having paid for onetime game ${game}.`);
+                                    });
 
                                     //allow relocate to function properly
                                     paid = true;
