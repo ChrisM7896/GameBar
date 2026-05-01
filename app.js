@@ -27,6 +27,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || `http://172.16.3.234:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
+const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
 
 // MIDDLEWARE
 app.set('view engine', 'ejs');
@@ -64,6 +65,39 @@ const authSocket = ioClient(AUTH_URL, {
 let paid = false;
 
 // ROUTES
+
+// GITHUB WEBHOOK - FOR DEPLOYMENT AUTOMATION
+app.post("/github-webhook", express.raw({ type: "application/json" }), (req, res) => {
+    const signature = req.headers["x-hub-signature-256"];
+
+    const expectedSignature =
+        "sha256=" +
+        crypto
+            .createHmac("sha256", WEBHOOK_SECRET)
+            .update(req.body)
+            .digest("hex");
+
+    if (!crypto.timingSafeEqual(
+        Buffer.from(signature || ""),
+        Buffer.from(expectedSignature)
+    )) {
+        return res.status(401).send("Invalid signature");
+    }
+
+    const payload = JSON.parse(req.body.toString());
+
+    //Only deploy from main branch
+    if (payload.ref !== "refs/heads/main") {
+        return res.status(200).send("Ignored non-main branch");
+    }
+
+    res.status(200).send("Deploy started");
+
+    exec("bash /scripts/deploy.sh");
+});
+
+// PAGE ROUTES
+
 app.get('/login', (req, res) => {
     if (req.query.token) {
         let tokenData = jwt.decode(req.query.token);
@@ -132,18 +166,17 @@ app.get('/2048', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-        <div class="changelog-header">v1.0.0 - 2048 Released - 2/06/2026</div>
-        <li class="innerli">Initial release of 2048 on Gamebar</li>
-        <div class="changelog-header">v1.0.1 - Optimization change - 2/14/2026</div>
-        <li class="innerli">Removed unnecessary game loop</li>
-        <div class="changelog-header">v1.0.2 - Minor Change - 3/26/2026</div>
-        <li class="innerli">Removed false text</li>
         <div class="changelog-header">v1.0.3 - Bug Fix - 4/14/2026</div>
         <li class="innerli">Fixed game over screen not displaying</li>
+        <div class="changelog-header">v1.0.2 - Minor Change - 3/26/2026</div>
+        <li class="innerli">Removed false text</li>
+        <div class="changelog-header">v1.0.1 - Optimization change - 2/14/2026</div>
+        <li class="innerli">Removed unnecessary game loop</li>
+        <div class="changelog-header">v1.0.0 - 2048 Released - 2/06/2026</div>
+        <li class="innerli">Initial release of 2048 on Gamebar</li>
         </details>`,
         game: '2048',
         preview: `<img id="previewImg" src="/2048/2048preview.png" alt="2048 preview" height="500">`,
-        playButton: `<button id="button" onclick="play()"">Play</button>`,
         playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Use the arrow keys to move the tiles. When two tiles with the same number touch, they merge into a
         greater one! The goal is to create a tile with the number 2048. Be careful, though: if the board fills
@@ -186,17 +219,17 @@ app.get('/snake', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-        <div class="changelog-header">v1.0.0 - Snake Released - 3/06/2026</div>
-        <li class="innerli">Initial release of Snake on Gamebar</li>
-        <div class="changelog-header">v1.0.1 - Minor CSS Update - 3/06/2026</div>
-        <li class="innerli">Updated Score/Time and in-game button CSS for visual appeal</li>
         <div class="changelog-header">v1.0.2 - Bug Fix - 4/14/2026</div>
         <li class="innerli">Fixed timer not changing at all</li>
+        <div class="changelog-header">v1.0.1 - Minor CSS Update - 3/06/2026</div>
+        <li class="innerli">Updated Score/Time and in-game button CSS for visual appeal</li>
+        <div class="changelog-header">v1.0.0 - Snake Released - 3/06/2026</div>
+        <li class="innerli">Initial release of Snake on Gamebar</li>
 
         </details>`,
         game: 'Snake',
         preview: `<img id="previewImg" src="/snake/snakepreview.png" alt="Snake Preview" height="500">`,
-        playButton: `<button id="button" onclick="play()"">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Use the arrow keys to move the snake in the desired direction. Eat the red apples to grow longer, but be careful not to run into your own tail or the walls!`,
         specifics: ` <details>
         <summary class="summaries">Specifics</summary>
@@ -226,16 +259,16 @@ app.get('/stack', isAuthenticated, (req, res) => {
         changelog: `<details>
             <summary class="summaries">Changelog</summary>
             <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-            <div class="changelog-header">v1.0.0 - Stack Released - 3/06/2026</div>
-            <li class="innerli">Initial release of Stack on Gamebar</li>
+            <div class="changelog-header">v1.0.2 - Bug Fix - 4/14/2026</div>
+            <li class="innerli">Fixed freeze on 5x perfect stack bonus</li>
             <div class="changelog-header">v1.0.1 - Small Tweak - 3/20/2026</div>
             <li class="innerli">Deleted mode selection refresh on game over</li>
-            <div class="changelog-header">v1.0.2 - Bugfix - 4/14/2026</div>
-            <li class="innerli">Fixed freeze on 5x perfect stack bonus</li>
+            <div class="changelog-header">v1.0.0 - Stack Released - 3/06/2026</div>
+            <li class="innerli">Initial release of Stack on Gamebar</li>
             </details>`,
         game: 'Stack',
         preview: `<img id="previewImg" src="/stack/stackpreview.png" alt="Stack Preview" height="500">`,
-        playButton: `<button id="button" onclick="play()"">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
         guide: `Select your difficulty and press the spacebar to drop the moving block as evenly onto the stack as possible. The more unevenly you drop it, the smaller the next block will be, making it harder to stack. If you miss the stack entirely, it's game over! Try to stack as high as possible!`,
         specifics: ` <details>
             <summary class="summaries">Specifics</summary>
@@ -262,23 +295,23 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
         changelog: `<details>
                 <summary class="summaries">Changelog</summary>
                 <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-                <div class="changelog-header">v1.0.0 - Alchemy Released - 3/06/2026</div>
-                <li class="innerli">Initial release of Alchemy on Gamebar, with 414 elements</li>
-                <div class="changelog-header">v1.0.1 - Small Update - 3/16/2026</div>
-                <li class="innerli">Added 10 new elements</li>
-                <div class="changelog-header">v1.0.2 - Small Update - 3/17/2026</div>
-                <li class="innerli">Added 33 new elements</li>
-                <li class="innerli">Altered 2 element recipes</li>
-                <div class="changelog-header">v1.1.0 - Elements Patch - 3/24/2026</div>
-                <li class="innerli">Moved element definitions to server-side, preventing cheating through inspect elements</li>
-                <li class="innerli">Added 24 new elements</li>
-                <div class="changelog-header">v1.1.1 - Small Update - 3/26/2026</div>
-                <li class="innerli">Added 34 new elements</li>
-                <div class="changelog-header">v1.2.0 - Game Saving - 4/08/2026</div>
-                <li class="innerli">Implemented game saving functionality</li>
                 <div class="changelog-header">v1.2.1 - Bug Fix - 4/27/2026</div>
                 <li class="innerli">Fixed one-time purchase not saving properly</li>
                 <li class="innerli">Fixed issue with Osama Bin Laden</li>
+                <div class="changelog-header">v1.2.0 - Game Saving - 4/08/2026</div>
+                <li class="innerli">Implemented game saving functionality</li>
+                <div class="changelog-header">v1.1.1 - Small Update - 3/26/2026</div>
+                <li class="innerli">Added 34 new elements</li>
+                <div class="changelog-header">v1.1.0 - Elements Patch - 3/24/2026</div>
+                <li class="innerli">Moved element definitions to server-side, preventing cheating through inspect elements</li>
+                <li class="innerli">Added 24 new elements</li>
+                <div class="changelog-header">v1.0.2 - Small Update - 3/17/2026</div>
+                <li class="innerli">Added 33 new elements</li>
+                <li class="innerli">Altered 2 element recipes</li>
+                <div class="changelog-header">v1.0.1 - Small Update - 3/16/2026</div>
+                <li class="innerli">Added 10 new elements</li>
+                <div class="changelog-header">v1.0.0 - Alchemy Released - 3/06/2026</div>
+                <li class="innerli">Initial release of Alchemy on Gamebar, with 414 elements</li>
             </details>`,
         game: 'Alchemy',
         preview: `<img id="previewImg" src="/alchemy/alchemypreview.png" alt="Alchemy Preview" height="500">`,
@@ -307,13 +340,13 @@ app.get('/wordle', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-        <div class="changelog-header">v1.0.0 - Wordle Released - 3/23/2026</div>
-        <li class="innerli">Initial release of Wordle on Gamebar</li>
-        <div class="changelog-header">v1.0.1 - Bug Fix - 4/14/2026</div>
-        <li class="innerli">Fixed game not autofocusing on start</li>
         <div class="changelog-header">v1.0.2 - More Bug Fixes - 4/20/2026</div>
         <li class="innerli">Changed box colors to properly match keyboard display, and removed janky and unfinished coloring features.</li>
         <li class="innerli">Fixed datamuse dictionary search</li>
+        <div class="changelog-header">v1.0.1 - Bug Fix - 4/14/2026</div>
+        <li class="innerli">Fixed game not autofocusing on start</li>
+        <div class="changelog-header">v1.0.0 - Wordle Released - 3/23/2026</div>
+        <li class="innerli">Initial release of Wordle on Gamebar</li>
         </details>`,
         game: 'Wordle',
         preview: `<img id="previewImg" src="/wordle/wordlepreview.png" alt="Wordle Preview" height="500">`,
@@ -492,20 +525,20 @@ io.on('connection', (socket) => {
                     });
                 }
 
-            //if the game is in the onetime table, check if the user has already paid for it
-            console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
-            if (row && row[game] == 1) {
-                //game is already paid for, skip GP deduction
-                console.log(`User ${user} has already paid for the onetime game ${game}.`);
-                paid = true;
-                socket.emit('onetimePaid');
-            } else if (row && row[game] == 0) {
-                //check if the user has enough gp
-                db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
-                    console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
-                    if (err) {
-                        return console.error(err.message);
-                    }
+                //if the game is in the onetime table, check if the user has already paid for it
+                console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
+                if (row && row[game] == 1) {
+                    //game is already paid for, skip GP deduction
+                    console.log(`User ${user} has already paid for the onetime game ${game}.`);
+                    paid = true;
+                    socket.emit('onetimePaid');
+                } else if (row && row[game] == 0) {
+                    //check if the user has enough gp
+                    db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                        console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
+                        if (err) {
+                            return console.error(err.message);
+                        }
 
                         if (row.gp < cost) {
                             socket.emit('insufficientFunds', cost);
@@ -513,21 +546,21 @@ io.on('connection', (socket) => {
                             //deduct GP and update the onetime table if necessary
                             socket.emit('confirmCost', cost);
 
-                        socket.on('confirmPlay', () => {
-                            db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
-                                console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
-                                if (err) {
-                                    return console.error(err.message);
-                                }
-
-                                //update the onetime table if the game exists
-                                db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
-                                    console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                            socket.on('confirmPlay', () => {
+                                db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                    console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
                                     if (err) {
                                         return console.error(err.message);
                                     }
-                                    console.log(`Set user ${user} as having paid for onetime game ${game}.`);
-                                });
+
+                                    //update the onetime table if the game exists
+                                    db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
+                                        console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                                        if (err) {
+                                            return console.error(err.message);
+                                        }
+                                        console.log(`Set user ${user} as having paid for onetime game ${game}.`);
+                                    });
 
                                     //allow relocate to function properly
                                     paid = true;
