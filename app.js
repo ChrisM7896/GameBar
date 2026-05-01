@@ -70,7 +70,7 @@ app.get('/login', (req, res) => {
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
 
-        // SAVE USER TO DATABSE IF NOT EXISTS
+        // SAVE USER TO DATABASE IF NOT EXISTS
         db.get('SELECT id FROM users WHERE username = ?', [tokenData.displayName], function (err, row) {
             if (err) {
                 return console.error(err.message);
@@ -443,7 +443,7 @@ io.on('connection', (socket) => {
 
         let user = data.user;
         let cost = prices[data.game];
-        let game = data.game;
+        let game = data.game.toLowerCase().replace(/\s/g, '_'); // Convert game name to lowercase and replace spaces with underscores for database compatibility
         console.log('Play Game Data:', data);
         console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
@@ -475,6 +475,7 @@ io.on('connection', (socket) => {
             }
 
             //if the game is in the onetime table, check if the user has already paid for it
+            console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
             if (row && row[game] == 1) {
                 //game is already paid for, skip GP deduction
                 console.log(`User ${user} has already paid for the onetime game ${game}.`);
@@ -483,6 +484,7 @@ io.on('connection', (socket) => {
             } else if (row && row[game] == 0) {
                 //check if the user has enough gp
                 db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                    console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
                     if (err) {
                         return console.error(err.message);
                     }
@@ -495,12 +497,14 @@ io.on('connection', (socket) => {
 
                         socket.on('confirmPlay', () => {
                             db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
                                 if (err) {
                                     return console.error(err.message);
                                 }
 
                                 //update the onetime table if the game exists
                                 db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
+                                    console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
                                     if (err) {
                                         return console.error(err.message);
                                     }
@@ -516,6 +520,7 @@ io.on('connection', (socket) => {
                 });
             } else {
                 db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                    console.log(`User ${user} is attempting to play a game that is not onetime, proceeding with normal transaction flow.`);
                     if (err) {
                         return console.error(err.message);
                     }
