@@ -69,6 +69,7 @@ app.get('/login', (req, res) => {
         let tokenData = jwt.decode(req.query.token);
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
+        clientID = req.session.token.id;
 
         // SAVE USER TO DATABASE IF NOT EXISTS
         db.get('SELECT id FROM users WHERE username = ?', [tokenData.displayName], function (err, row) {
@@ -77,7 +78,7 @@ app.get('/login', (req, res) => {
             }
 
             if (!row) {
-                db.run('INSERT INTO users (username) VALUES (?)', [tokenData.displayName], function (err) {
+                db.run('INSERT INTO users (fid, username) VALUES (?, ?)', [clientID, tokenData.displayName], function (err) {
                     if (err) {
                         return console.error(err.message);
                     }
@@ -105,8 +106,6 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/', isAuthenticated, (req, res) => {
-    clientID = req.session.token.id;
-
     // GET GAMEPOINTS FROM DATABASE
     db.get('SELECT gp FROM users WHERE username = ?', [req.session.user], (err, row) => {
         if (err) {
@@ -461,7 +460,7 @@ io.on('connection', (socket) => {
         let user = data.user;
         if (prices[data.game]) {
             let cost = prices[data.game];
-            let game = data.game.toLowerCase().replace(/\s/g, '_');
+            let game = data.game.toLowerCase().replace(/\s/g, '_');;
             console.log('Play Game Data:', data);
             console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
@@ -492,20 +491,20 @@ io.on('connection', (socket) => {
                     });
                 }
 
-            //if the game is in the onetime table, check if the user has already paid for it
-            console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
-            if (row && row[game] == 1) {
-                //game is already paid for, skip GP deduction
-                console.log(`User ${user} has already paid for the onetime game ${game}.`);
-                paid = true;
-                socket.emit('onetimePaid');
-            } else if (row && row[game] == 0) {
-                //check if the user has enough gp
-                db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
-                    console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
-                    if (err) {
-                        return console.error(err.message);
-                    }
+                //if the game is in the onetime table, check if the user has already paid for it
+                console.log(`Retrieved onetime purchase data for user ${user} and game ${game}:`, row);
+                if (row && row[game] == 1) {
+                    //game is already paid for, skip GP deduction
+                    console.log(`User ${user} has already paid for the onetime game ${game}.`);
+                    paid = true;
+                    socket.emit('onetimePaid');
+                } else if (row && row[game] == 0) {
+                    //check if the user has enough gp
+                    db.get('SELECT gp FROM users WHERE username = ?', [user], (err, row) => {
+                        console.log(`User ${user} is attempting to play onetime game ${game} for the first time, checking GP balance.`);
+                        if (err) {
+                            return console.error(err.message);
+                        }
 
                         if (row.gp < cost) {
                             socket.emit('insufficientFunds', cost);
@@ -513,21 +512,21 @@ io.on('connection', (socket) => {
                             //deduct GP and update the onetime table if necessary
                             socket.emit('confirmCost', cost);
 
-                        socket.on('confirmPlay', () => {
-                            db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
-                                console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
-                                if (err) {
-                                    return console.error(err.message);
-                                }
-
-                                //update the onetime table if the game exists
-                                db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
-                                    console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                            socket.on('confirmPlay', () => {
+                                db.run('UPDATE users SET gp = gp - ? WHERE username = ?', [cost, user], function (err) {
+                                    console.log(`Deducting ${cost} GP from user ${user} for onetime game ${game}.`);
                                     if (err) {
                                         return console.error(err.message);
                                     }
-                                    console.log(`Set user ${user} as having paid for onetime game ${game}.`);
-                                });
+
+                                    //update the onetime table if the game exists
+                                    db.run(`UPDATE onetime SET ${game} = 1 WHERE user = ?`, [user], function (err) {
+                                        console.log(`Setting onetime game ${game} as paid for user ${user} in the onetime table.`);
+                                        if (err) {
+                                            return console.error(err.message);
+                                        }
+                                        console.log(`Set user ${user} as having paid for onetime game ${game}.`);
+                                    });
 
                                     //allow relocate to function properly
                                     paid = true;
@@ -554,7 +553,7 @@ io.on('connection', (socket) => {
                                         return console.error(err.message);
                                     }
                                     paid = true;
-                                    socket.emit('relocate');
+                                    socket.emit('relocate', game);
                                 });
                             });
                         }
