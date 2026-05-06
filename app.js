@@ -54,6 +54,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 let clientID;
 
+// let activeClients = {};
+
 const authSocket = ioClient(AUTH_URL, {
     extraHeaders: {
         api: API_KEY
@@ -70,6 +72,8 @@ app.get('/login', (req, res) => {
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
         clientID = req.session.token.id;
+
+        // activeClients[req.session.user] = clientID;
 
         // SAVE USER TO DATABASE IF NOT EXISTS
         db.get('SELECT id FROM users WHERE username = ?', [tokenData.displayName], function (err, row) {
