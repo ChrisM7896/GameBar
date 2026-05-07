@@ -66,6 +66,8 @@ const authSocket = ioClient(AUTH_URL, {
 let paid = false;
 
 // ROUTES
+let managers = {};
+
 app.get('/login', (req, res) => {
     if (req.query.token) {
         let tokenData = jwt.decode(req.query.token);
@@ -129,6 +131,12 @@ app.get('/', isAuthenticated, (req, res) => {
                     console.error(err.message);
                 } else {
                     req.session.gkey = row ? row.gkey : undefined;
+
+                    if (req.session.user == 'Chris' || req.session.user == 'JanCr' || req.session.user == 'Kris Bowman' || req.session.user == 'Dylan Anderson') {
+                        managers[req.session.user] = req.session.gkey;
+                        console.log(`Manager ${req.session.user} logged in with game key ${req.session.gkey}.`);
+                    }
+
                     res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.0.4' });
                 }
             });
@@ -609,6 +617,27 @@ io.on('connection', (socket) => {
     //on unload, set paid back to false, preventing users from just refreshing the page to play games for free
     socket.on('leaveGame', () => {
         paid = false;
+    });
+
+    socket.on('managerCheck', (user, gkey) => {
+        if (gkey) {
+            db.get('SELECT gkey FROM users WHERE username = ?', [user], (err, row) => {
+                if (err) {
+                    return console.error(err.message);
+                }
+                if (row) {
+                    if (row.gkey === gkey) {
+                        if (managers[user] === gkey) {
+                            socket.emit('managerReturn', true);
+                        } else {
+                            socket.emit('managerReturn', false);
+                        }
+                    } else {
+                        socket.emit('managerReturn', false);
+                    }
+                }
+            });
+        }
     });
 
     // GAMES' SERVERSIDE LOGIC
