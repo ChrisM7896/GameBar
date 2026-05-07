@@ -55,6 +55,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 let clientID;
 
+// let activeClients = {};
+
 const authSocket = ioClient(AUTH_URL, {
     extraHeaders: {
         api: API_KEY
@@ -103,6 +105,9 @@ app.get('/login', (req, res) => {
         let tokenData = jwt.decode(req.query.token);
         req.session.token = tokenData;
         req.session.user = tokenData.displayName;
+        clientID = req.session.token.id;
+
+        // activeClients[req.session.user] = clientID;
 
         // SAVE USER TO DATABASE IF NOT EXISTS
         db.get('SELECT id FROM users WHERE username = ?', [tokenData.displayName], function (err, row) {
@@ -111,7 +116,7 @@ app.get('/login', (req, res) => {
             }
 
             if (!row) {
-                db.run('INSERT INTO users (username) VALUES (?)', [tokenData.displayName], function (err) {
+                db.run('INSERT INTO users (fid, username) VALUES (?, ?)', [clientID, tokenData.displayName], function (err) {
                     if (err) {
                         return console.error(err.message);
                     }
@@ -139,8 +144,6 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/', isAuthenticated, (req, res) => {
-    clientID = req.session.token.id;
-
     // GET GAMEPOINTS FROM DATABASE
     db.get('SELECT gp FROM users WHERE username = ?', [req.session.user], (err, row) => {
         if (err) {
@@ -494,7 +497,7 @@ io.on('connection', (socket) => {
         let user = data.user;
         if (prices[data.game]) {
             let cost = prices[data.game];
-            let game = data.game.toLowerCase().replace(/\s/g, '_');
+            let game = data.game.toLowerCase().replace(/\s/g, '_');;
             console.log('Play Game Data:', data);
             console.log(`User ${user} is attempting to play ${game} that costs ${cost} GP.`);
 
@@ -587,7 +590,7 @@ io.on('connection', (socket) => {
                                         return console.error(err.message);
                                     }
                                     paid = true;
-                                    socket.emit('relocate');
+                                    socket.emit('relocate', game);
                                 });
                             });
                         }
