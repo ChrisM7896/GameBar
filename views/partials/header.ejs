@@ -64,6 +64,20 @@
             color: inherit;
         }
 
+        #partials-header-splash-text {
+            font-size: 0.9em;
+            color: #babf56;
+            text-shadow: none;
+            position: absolute;
+            left: 50%;
+            margin-left: 5px;
+            transform: translateX(-50%);
+            background-color: #0f0f0f;
+            padding: 5px;
+            z-index: -1;
+            text-align: center;
+        }
+
         #partials-header-gamepoints-button {
             height: 45px;
             width: 45px;
@@ -136,20 +150,6 @@
             margin-top: 15px;
         }
 
-        #partials-header-splash-text {
-            font-size: 0.9em;
-            color: #babf56;
-            text-shadow: none;
-            position: absolute;
-            left: 50%;
-            margin-left: 5px;
-            transform: translateX(-50%);
-            background-color: #0f0f0f;
-            padding: 5px;
-            z-index: -1;
-            text-align: center;
-        }
-
         .partials-header-gp-imgs {
             width: 120px;
             height: 120px;
@@ -184,6 +184,76 @@
             box-shadow: 0 0 5px #4d664d;
         }
 
+        #partials-header-panel-button {
+            height: 45px;
+            width: 45px;
+        }
+
+        #partials-header-manager-panel {
+            position: absolute;
+            cursor: pointer;
+            right: 200px;
+            top: 10px;
+            display: none;
+        }
+
+        #partials-header-manager-label {
+            margin-left: 4px;
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+
+        #managerPanelWindow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #0f0f0f;
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            padding: 20px;
+            display: none;
+            z-index: 10;
+        }
+
+        #managerMask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 5;
+        }
+
+        #closeManagerWindow {
+            display: block;
+            margin: 0 auto;
+            margin-top: 20px;
+            padding: 5px 10px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #4d664d;
+        }
+
+        #managerPanelDisplayDiv {
+            text-align: center;
+            margin-top: 15px;
+
+        }
+
+        .managerPanelDisplay-button {
+            padding: 5px 10px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #4d664d;
+        }
+
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -212,6 +282,11 @@
         </a>
         <p class='partials-header' id="partials-header-user">Logged in as <%- user %></p><button class="partials-header"
             id="partials-header-logout-button" onclick="location.href='/logout'">Logout</button>
+
+        <div onclick="managerPanel('open')" id="partials-header-manager-panel">
+            <img src="/index/file.png" id="partials-header-panel-button">
+            <h3 id="partials-header-manager-label">Manager Panel</h3>
+        </div>
 
         <div onclick="gamePointsShop('open')" id="partials-header-gamepoints-station">
             <img src="/index/bag.png" id="partials-header-gamepoints-button">
@@ -252,6 +327,18 @@
         </div>
 
         <button id="closeWindow" onclick="gamePointsShop('close')">Close</button>
+    </div>
+
+    <div id="managerMask"></div>
+    <div id="managerPanelWindow">
+        <h2 style="text-align: center;">Manager Panel</h2>
+        <div id="managerPanelDisplayDiv">
+            <form id="gpAdjustmentForm">
+                
+            </form> 
+        </div>
+
+        <button id="closeManagerWindow" onclick="managerPanel('close')">Close</button>
     </div>
 
 </body>
@@ -501,6 +588,19 @@
         }
     }
 
+    function managerPanel(state) {
+        let panel = document.getElementById('managerPanelWindow');
+        let mask = document.getElementById('managerMask');
+
+        if (state === 'open') {
+            panel.style.display = 'block';
+            mask.style.display = 'block';
+        } else {
+            panel.style.display = 'none';
+            mask.style.display = 'none';
+        }
+    }
+
     // BUTTON HOVER EFFECTS
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
     let buttonsVar = document.getElementsByClassName('purchaseButtons');
@@ -515,7 +615,12 @@
         });
     });
 
-
+    socket.emit('managerCheck', user, '<%- gkey %>');
+    socket.on('managerReturn', (isManager) => {
+        if (isManager) {
+            document.getElementById('partials-header-manager-panel').style.display = 'inline-flex';
+        }
+    });
 </script>
 
 </html>
