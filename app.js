@@ -82,7 +82,15 @@ app.get('/login', (req, res) => {
             }
 
             if (!row) {
-                db.run('INSERT INTO users (fid, username) VALUES (?, ?)', [clientID, tokenData.displayName], function (err) {
+                let gameKey = '';
+                let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+                for (i = 0; i < 10; i++) {
+                    const randInt = Math.floor(Math.random() * 62);
+                    gameKey += letters[randInt];
+                }
+
+                db.run('INSERT INTO users (fid, username, gkey) VALUES (?, ?, ?)', [clientID, tokenData.displayName, tokenData.gkey], function (err) {
                     if (err) {
                         return console.error(err.message);
                     }
