@@ -640,6 +640,22 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('adjustGP', (username, amount, type) => {
+        if (type === 'add') {
+            typeQuery = '= gp +';
+        } else if (type === 'subtract') {
+            typeQuery = '= gp -';
+        } else if (type === 'set') {
+            typeQuery = '=';
+        }
+        db.run(`UPDATE users SET gp ${typeQuery} ? WHERE username = ?`, [amount, username], function (err) {
+            if (err) {
+                return console.error(err.message);
+            }
+            socket.emit('gpAdjusted', username, amount, type);
+        });
+    });
+
     // GAMES' SERVERSIDE LOGIC
     // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
