@@ -40,6 +40,15 @@ In order to initialize your project's database, you *need* to add the following 
 To initialize your database, run the following command in your terminal:
 > npm run init-db
 
+## Updating the Database
+If you have a database file with existing data you want to retain, but there have been changes to your database's schema, alter your scripts in your package.json to add the update-db command.
+>    "scripts": {
+>        "init-db": "node scripts/init-db.js",
+>        "update-db": "node scripts/update-db.js",
+>    }
+To update the database's schema according to changes made in the update.sql file, run the following commans in your terminal:
+> npm run update-db
+
 ***
 
 ## Templates

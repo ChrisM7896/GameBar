@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "init-db": "node scripts/init-db.js"
+    "init-db": "node scripts/init-db.js",
+    "update-db": "node scripts/update-db.js"
   },
   "author": "",
   "license": "ISC",
