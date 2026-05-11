@@ -53,7 +53,7 @@ To update the database's schema according to changes made in the update.sql file
 
 ## Templates
 ### Environment Variables
-Copy the .env_template file. Rename it to .env. Configure your PORT and SESSION_SECRET. Configure your THIS_URL to your desired redirect path for after login.
+Copy the .env_template file. Rename it to .env. Configure your PORT, SESSION_SECRET and API_KEY. Configure your THIS_URL to your desired redirect path for after login.
 
 *** 
 

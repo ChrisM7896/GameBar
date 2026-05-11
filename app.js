@@ -310,7 +310,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
             </details>`,
         game: 'Alchemy',
         preview: `<img id="previewImg" src="/alchemy/alchemypreview.png" alt="Alchemy Preview" height="500">`,
-        playButton: `<button id="button" onclick="play()">Play</button>`,
+        playButton: `<button id="button" onclick="play()">Buy</button>`,
         guide: `Drag and drop elements onto the game area to combine them. If the combination is correct, a new element will be created! You can also double click an element to spawn another one, and right click to delete it. Try to discover them all!`,
         specifics: ` <details>
                 <summary class="summaries">Specifics</summary>
@@ -363,6 +363,31 @@ app.get('/wordle', isAuthenticated, (req, res) => {
     res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
 });
 
+app.get('/fruitCrush', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic mobile game Candy Crush, this singleplayer game challenges the player's strategic thinking skills and mixes it with a touch of luck. This game was created within a week, one of the quickest games to be completed, and the first game completed by Dylan Anderson since he couldn't finish Pac-Man!`,
+        developer: 'Dylan Anderson',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Fruit Crush Released - 5/11/2026</div>
+        <li class="innerli">Initial release of Fruit Crush on Gamebar</li>
+        </details>`,
+        game: 'Fruit Crush',
+        preview: `<img id="previewImg" src="/fruitCrush/fruitCrushpreview.png" alt="Fruit Crush Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Match fruits of the same type to clear the board! Swap adjacent fruits to create matches of 3 or more. The more fruits you match in one move, the higher your score! Try to clear as many fruits as possible and beat your high score!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Placeholder</li>
+                </details>
+        </details>`
+    };
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+});
+
 app.get('/game_2048', isAuthenticated, (req, res) => {
     if (!paid) {
         // if the user hasn't paid, send user back to home page
@@ -405,6 +430,15 @@ app.get('/game_wordle', isAuthenticated, (req, res) => {
         res.redirect('/');
     } else {
         res.render('games/wordle/game_wordle', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Wordle', version: 'v1.0.2' });
+    }
+});
+
+app.get('/game_fruit_crush', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/fruitCrush/game_fruit_crush', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Fruit Crush', version: 'v1.0.0' });
     }
 });
 
@@ -479,17 +513,18 @@ io.on('connection', (socket) => {
     });
     socket.on('playGame', (data) => {
         prices = {
-            '2048': 45,
-            'Snake': 25,
-            'Stack': 30,
-            'Alchemy': 799,
-            'Wordle': 20
+            '2048': 100,
+            'Snake': 70,
+            'Stack': 40,
+            'Alchemy': 1200,
+            'Wordle': 50,
+            'Fruit Crush': 75,
         };
 
         let user = data.user;
         if (prices[data.game]) {
             let cost = prices[data.game];
-            let game = data.game.toLowerCase().replace(/\s/g, '_');;
+            let game = data.game.toLowerCase().replace(/\s/g, '_');
             let gkey = data.gkey;
 
             if (gkey) {

@@ -1,0 +1,418 @@
+<%- include('../../partials/header') %>
+
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/fruitCrush/logoFruitCrush.png';
+        document.head.appendChild(link);
+    </script>
+    <title>Fruit Crush</title>
+    <style>
+        #gameCanvas {
+            height: 75vmin;
+            width: 75vmin;
+            position: absolute;
+            top: 52%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            outline: 1px solid #4d664d;
+        }
+
+        #partials-header-version {
+            right: 820px;
+            top: 29px;
+        }
+    </style>
+    </head>
+
+    <body>
+        <canvas id="gameCanvas" width="2000" height="2000"></canvas>
+        <h1 id="score"
+            style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); margin: 0; color: #4d664d; font-family: Arial, sans-serif; z-index: 10;">
+            Score: 0</h1>
+
+        <script>
+            const canvas = document.getElementById('gameCanvas');
+            if (!(canvas instanceof HTMLCanvasElement)) {
+                throw new Error('Expected #gameCanvas to be a canvas element.');
+            }
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                throw new Error('Unable to get 2D rendering context.');
+            }
+            ctx.imageSmoothingEnabled = false;
+
+            const gridSize = 6;
+            const cellSize = canvas.width / gridSize;
+
+            const imageFiles = ['/variety/fruits/apple.png', '/variety/fruits/orange.png', '/variety/fruits/banana.png', '/variety/fruits/avacado.png', '/variety/fruits/blueberry.png', '/variety/fruits/grape.png'];
+
+            const images = {};
+            let imagesLoaded = false;
+            (() => {
+                let loaded = 0;
+                for (const file of imageFiles) {
+                    const img = new Image();
+                    img.src = file;
+                    img.onload = () => {
+                        loaded++;
+                        if (loaded === imageFiles.length) imagesLoaded = true;
+                    };
+                    img.onerror = () => {
+                        loaded++;
+                        if (loaded === imageFiles.length) imagesLoaded = true;
+                    };
+                    images[file] = img;
+                }
+            })();
+
+            const addColorsToBoard = (size, colors) => {
+                const board = [];
+
+                for (let row = 0; row < size; row++) {
+                    const currentRow = [];
+
+                    for (let col = 0; col < size; col++) {
+                        currentRow.push(colors[Math.floor(Math.random() * colors.length)]);
+                    }
+
+                    board.push(currentRow);
+                }
+
+                return board;
+            };
+
+            const randomCandy = () => imageFiles[Math.floor(Math.random() * imageFiles.length)];
+
+            const fillRandomBoard = (board) => {
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        board[row][col] = randomCandy();
+                    }
+                }
+            };
+
+            const findMatches = (board) => {
+                const matches = new Set();
+                const size = board.length;
+
+                for (let row = 0; row < size; row++) {
+                    let runStart = 0;
+
+                    for (let col = 1; col <= size; col++) {
+                        const isRunEnd = col === size || board[row][col] !== board[row][col - 1];
+
+                        if (isRunEnd) {
+                            if (col - runStart >= 3 && board[row][col - 1] != null) {
+                                for (let i = runStart; i < col; i++) {
+                                    matches.add(`${row},${i}`);
+                                }
+                            }
+
+                            runStart = col;
+                        }
+                    }
+                }
+
+                for (let col = 0; col < size; col++) {
+                    let runStart = 0;
+
+                    for (let row = 1; row <= size; row++) {
+                        const isRunEnd = row === size || board[row][col] !== board[row - 1][col];
+
+                        if (isRunEnd) {
+                            if (row - runStart >= 3 && board[row - 1][col] != null) {
+                                for (let i = runStart; i < row; i++) {
+                                    matches.add(`${i},${col}`);
+                                }
+                            }
+
+                            runStart = row;
+                        }
+                    }
+                }
+
+                return matches;
+            };
+
+            let score = 0;
+            const scoreEl = document.getElementById('score');
+
+            const updateScore = () => {
+                scoreEl.textContent = `Score: ${score}`;
+            };
+
+            const clearMatches = (board, matches, shouldScore = true) => {
+                if (shouldScore) {
+                    score += matches.size;
+                    updateScore();
+                }
+
+                matches.forEach((key) => {
+                    const [row, col] = key.split(',').map(Number);
+                    board[row][col] = null;
+                });
+            };
+
+            const collapseBoard = (board) => {
+                for (let col = 0; col < board.length; col++) {
+                    let writeRow = board.length - 1;
+
+                    for (let row = board.length - 1; row >= 0; row--) {
+                        if (board[row][col] != null) {
+                            board[writeRow][col] = board[row][col];
+                            writeRow--;
+                        }
+                    }
+
+                    for (let row = writeRow; row >= 0; row--) {
+                        board[row][col] = randomCandy();
+                    }
+                }
+            };
+
+            const hasAvailableMoves = (board) => {
+                const size = board.length;
+
+                for (let row = 0; row < size; row++) {
+                    for (let col = 0; col < size; col++) {
+                        const directions = [
+                            [0, 1],
+                            [1, 0]
+                        ];
+
+                        for (const [dr, dc] of directions) {
+                            const nextRow = row + dr;
+                            const nextCol = col + dc;
+
+                            if (nextRow >= size || nextCol >= size) continue;
+
+                            const temp = board[row][col];
+                            board[row][col] = board[nextRow][nextCol];
+                            board[nextRow][nextCol] = temp;
+
+                            const createsMatch = findMatches(board).size > 0;
+
+                            board[nextRow][nextCol] = board[row][col];
+                            board[row][col] = temp;
+
+                            if (createsMatch) return true;
+                        }
+                    }
+                }
+
+                return false;
+            };
+
+            const drawBoard = (board, highlightedMatches = new Set()) => {
+                ctx.fillStyle = '#151b1b';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const size = board.length;
+                const cellSize = canvas.width / size;
+                const drawSize = cellSize * (2 / 3);
+                const offset = (cellSize - drawSize) / 2;
+
+                ctx.strokeStyle = '#4d664d';
+                ctx.lineWidth = 3;
+
+                for (let i = 0; i <= size; i++) {
+                    const pos = i * cellSize;
+
+                    ctx.beginPath();
+                    ctx.moveTo(pos, 0);
+                    ctx.lineTo(pos, canvas.height);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, pos);
+                    ctx.lineTo(canvas.width, pos);
+                    ctx.stroke();
+                }
+
+                for (let row = 0; row < size; row++) {
+                    for (let col = 0; col < size; col++) {
+                        const candy = board[row][col];
+                        const x = col * cellSize + offset;
+                        const y = row * cellSize + offset;
+
+                        const img = images[candy];
+                        if (imagesLoaded && img && img.complete && img.naturalWidth !== 0) {
+                            ctx.drawImage(img, x, y, drawSize, drawSize);
+                        } else {
+                            ctx.fillStyle = '#888';
+                            ctx.fillRect(x, y, drawSize, drawSize);
+                        }
+
+                        if (highlightedMatches.has(`${row},${col}`)) {
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                            ctx.fillRect(x, y, drawSize, drawSize);
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                            ctx.lineWidth = 8;
+                            ctx.strokeRect(x, y, drawSize, drawSize);
+                        }
+                    }
+                }
+            };
+
+            const board = addColorsToBoard(gridSize, imageFiles);
+            let lastStep = 0;
+            const stepDelay = 0;
+            let boardReady = false;
+            let hasStarted = false;
+            let isInitialSetup = true;
+            let gameOver = false;
+            let highlightedMatches = new Set();
+            let matchHighlightUntil = 0;
+            const matchHighlightDelay = 300;
+
+            let mouseX = 0;
+            let mouseY = 0;
+            let isLeftMouseDown = false;
+            let dragStartCell = null;
+            let didSwapThisDrag = false;
+
+            const getCellFromMouse = (event) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+
+                mouseX = (event.clientX - rect.left) * scaleX;
+                mouseY = (event.clientY - rect.top) * scaleY;
+
+                const col = Math.floor(mouseX / cellSize);
+                const row = Math.floor(mouseY / cellSize);
+
+                if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) {
+                    return null;
+                }
+
+                return { row, col };
+            };
+
+            const areAdjacent = (a, b) => {
+                if (!a || !b) return false;
+                return Math.abs(a.row - b.row) + Math.abs(a.col - b.col) === 1;
+            };
+
+            const swapCandies = (a, b) => {
+                const temp = board[a.row][a.col];
+                board[a.row][a.col] = board[b.row][b.col];
+                board[b.row][b.col] = temp;
+            };
+
+            const trySwap = (a, b) => {
+                swapCandies(a, b);
+                const matches = findMatches(board);
+
+                if (matches.size === 0) {
+                    swapCandies(a, b);
+                    return false;
+                }
+
+                boardReady = false;
+                return true;
+            };
+
+            canvas.addEventListener('mousedown', (event) => {
+                if (event.button !== 0) return;
+                isLeftMouseDown = true;
+                didSwapThisDrag = false;
+                dragStartCell = getCellFromMouse(event);
+            });
+
+            canvas.addEventListener('mousemove', (event) => {
+                const currentCell = getCellFromMouse(event);
+
+                if (!isLeftMouseDown || didSwapThisDrag || !dragStartCell || !currentCell || !boardReady || gameOver) {
+                    return;
+                }
+
+                if (areAdjacent(dragStartCell, currentCell)) {
+                    const didSwap = trySwap(dragStartCell, currentCell);
+                    if (didSwap) {
+                        didSwapThisDrag = true;
+                        dragStartCell = currentCell;
+                    }
+                }
+            });
+
+            const endDrag = () => {
+                isLeftMouseDown = false;
+                dragStartCell = null;
+                didSwapThisDrag = false;
+            };
+
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('mouseleave', endDrag);
+            window.addEventListener('mouseup', endDrag);
+
+            const gameLoop = (time) => {
+                if (time - lastStep >= stepDelay) {
+                    if (highlightedMatches.size > 0 && time >= matchHighlightUntil) {
+                        clearMatches(board, highlightedMatches);
+                        collapseBoard(board);
+                        highlightedMatches = new Set();
+                        boardReady = false;
+                    } else if (highlightedMatches.size === 0) {
+                        const matches = findMatches(board);
+
+                        if (matches.size > 0) {
+                            if (isInitialSetup) {
+                                clearMatches(board, matches, false);
+                                collapseBoard(board);
+                                boardReady = false;
+                            } else {
+                                highlightedMatches = matches;
+                                matchHighlightUntil = time + (isInitialSetup ? 0 : matchHighlightDelay);
+                                boardReady = false;
+                            }
+                        } else {
+                            if (!hasAvailableMoves(board)) {
+                                if (!hasStarted) {
+                                    fillRandomBoard(board);
+                                    boardReady = false;
+                                } else {
+                                    boardReady = true;
+                                    gameOver = true;
+                                }
+                            } else {
+                                boardReady = true;
+                                hasStarted = true;
+                                isInitialSetup = false;
+                            }
+                        }
+                    } else if (time < matchHighlightUntil) {
+                        boardReady = false;
+                    }
+
+                    lastStep = time;
+                }
+
+                drawBoard(board, highlightedMatches);
+
+                if (!boardReady) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                if (gameOver) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 140px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+                }
+
+                requestAnimationFrame(gameLoop);
+            };
+
+            requestAnimationFrame(gameLoop);
+        </script>
+    </body>
+
+    </html>
