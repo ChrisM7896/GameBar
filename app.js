@@ -161,6 +161,8 @@ app.get('/2048', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.4 - Bug Fix - 5/12/2026</div>
+        <li class="innerli">Fixed game over/win screen drawing multiple times</li>
         <div class="changelog-header">v1.0.3 - Bug Fix - 4/14/2026</div>
         <li class="innerli">Fixed game over screen not displaying</li>
         <div class="changelog-header">v1.0.2 - Minor Change - 3/26/2026</div>
@@ -397,7 +399,7 @@ app.get('/game_2048', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: '2048', version: 'v1.0.3' });
+        res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: '2048', version: 'v1.0.4' });
     }
 });
 
