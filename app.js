@@ -138,7 +138,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`Manager ${req.session.user} logged in with game key ${req.session.gkey}.`);
                     }
 
-                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0' });
+                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1' });
                 }
             });
         }
@@ -148,7 +148,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -204,7 +204,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -243,7 +243,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 }
 );
 
@@ -280,7 +280,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -325,7 +325,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -360,12 +360,12 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
     const data = {
-        description: `Based on the classic mobile game Candy Crush, this singleplayer game challenges the player's strategic thinking skills and mixes it with a touch of luck. This game was created within a week, one of the quickest games to be completed, and the first game completed by Dylan Anderson since he couldn't finish Pac-Man!`,
+        description: `Based on the classic mobile game Candy Crush, this singleplayer game challenges the player's strategic thinking skills and mixes it with a touch of luck.<br><br>This game was created within a week, one of the quickest to be completed, and is the first game completed by Dylan Anderson (since he couldn't finish Pac-Man), making it the 6th Gamebar game!`,
         developer: 'Dylan Anderson',
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
@@ -381,11 +381,15 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
         <summary class="summaries">Specifics</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
                 <h3>Wordified Logic:</h3>
-                <li class="innerli">Placeholder</li>
+                <li class="innerli">On game start, canvas is drawn and redrawn every frame</li>
+                <li class="innerli">Fruits are randomly scattered on the 6x6 grid, and arranged in such a way that there is at least one available move</li>
+                <li class="innerli">On tile drag, swaps fruits if it creates a match of 3 or more, increasing the score by the amount of fruits.</li>
+                <li class="innerli">Tiles are then removed, gravity does its thing, and new tiles fill the empty space</li>
+                <li class="innerli">If there are no available moves after a match, game over.</li>
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.0', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.1', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
