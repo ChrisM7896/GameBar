@@ -12,7 +12,7 @@ To install the project's required dependencies, copy the following command and p
 
 This should create package.json and package-lock.json files.
 Under dependencies, you should see something like this:
-
+```
 >  "dependencies": {
 >     "connect-sqlite3": "^latest-version",
 >     "datamuse": "^latest-version",
@@ -29,7 +29,7 @@ Under dependencies, you should see something like this:
 >     "sqlite3": "^latest-version",
 >     "winston": "^latest-version"
 >  }
-
+```
 ***
 
 ### Initializing the Database
