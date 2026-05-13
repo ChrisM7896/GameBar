@@ -8,7 +8,9 @@ Programming project intended to have various solo and multiplayer games incorpor
 ## Package Configuration
 ### Modules
 To install the project's required dependencies, copy the following command and paste it in the terminal:
-``` npm install connect-sqlite3 datamuse dotenv ejs express express-session jsonwebtoken multer nodemon pm2 socket.io socket.io-client sqlite3 winston ```
+``` 
+npm install connect-sqlite3 datamuse dotenv ejs express express-session jsonwebtoken multer nodemon pm2 socket.io socket.io-client sqlite3 winston
+```
 
 This should create package.json and package-lock.json files.
 Under dependencies, you should see something like this:
@@ -40,7 +42,9 @@ In order to initialize your project's database, you *need* to add the following 
     }
 ```
 To initialize your database, run the following command in your terminal:
-``` npm run init-db ```
+```
+npm run init-db
+```
 
 ## Updating the Database
 If you have a database file with existing data you want to retain, but there have been changes to your database's schema, alter your scripts in your package.json to add the update-db command.
@@ -51,7 +55,9 @@ If you have a database file with existing data you want to retain, but there hav
     }
 ```
 To update the database's schema according to changes made in the update.sql file, run the following commans in your terminal:
-``` npm run update-db ```
+``` 
+npm run update-db
+```
 
 ***
 
@@ -63,12 +69,18 @@ Copy the .env_template file. Rename it to .env. Configure your PORT, SESSION_SEC
 
 ## Starting the Server
 After the server has been properly configured as outlined above, start the server with the following command:
-``` npx pm2 start app.js --name gamebar ```
+``` 
+npx pm2 start app.js --name gamebar
+```
 
 ## Restarting/Stopping the Server
 To restart or stop the server from running, use the following commands:
 
 ### Restarting
-``` npx pm2 restart gamebar ```
+``` 
+npx pm2 restart gamebar
+```
 ### Stopping
-``` npx pm2 stop gamebar ```
+``` 
+npx pm2 stop gamebar
+```
