@@ -654,7 +654,7 @@
         const amountInput = document.getElementById('gpAdjustmentAmount');
         const typeSelect = document.getElementById('gpAdjustmentType');
 
-        socket.emit('adjustGP', usernameInput.value, parseInt(amountInput.value), typeSelect.value);
+        socket.emit('adjustGP', usernameInput.value, parseInt(amountInput.value), typeSelect.value, user, '<%- gkey %>');
     }
 
     socket.on('gpAdjusted', (username, amount, type) => {
