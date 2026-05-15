@@ -415,7 +415,11 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
         <summary class="summaries">Specifics</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
                 <h3>Wordified Logic:</h3>
-                
+                <li class="innerli">Upon start: Game begins by shuffling and dealing out cards randomlye</li>
+                <li class="innerli">The player upon starting can draw from the specified pile by clicking or using the drag and drop options.</li>
+                <li class="innerli">On click the selected card(s) will become highlighted and text will display describing which card is currently selected.</li>
+                <li class="innerli">When the player moves a card said text will also change to state the movement.</li>
+                <li class="innerli">Upon completing the game they will be prompted with a win message on the page.</li>
                 </details>
         </details>`
     };
