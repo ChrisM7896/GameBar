@@ -25,7 +25,7 @@ const db = new sqlite3.Database('./db/app.db', (err) => {
 const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
-const THIS_URL = process.env.THIS_URL || `http://172.16.3.249:${PORT}`;
+const THIS_URL = process.env.THIS_URL || `http://YOUR_IP:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
 const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
 
@@ -141,7 +141,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3' });
+                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4' });
                 }
             });
         }
@@ -151,7 +151,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -209,7 +209,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -248,7 +248,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 }
 );
 
@@ -285,7 +285,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -330,7 +330,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -365,7 +365,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
@@ -394,7 +394,32 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.3', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
+});
+
+app.get('/solitaire', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic card game, this singleplayer game challenges the player's strategic thinking and problem solving skills, as they try to sort the deck into the four suit piles. <br><br> This project is the seventh completed Gamebar game, and the second one completed by Jan, making it the first Gamebar card game and the most complicated one yet!`,
+        developer: 'Jan Cruz-Valentin',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Solitaire Released - 5/15/2026</div>
+        <li class="innerli">Initial release of Solitaire on Gamebar</li>
+        </details>`,
+        game: 'Solitaire',
+        preview: `<img id="previewImg" src="/solitaire/solitairepreview.png" alt="Solitaire Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Try to sort the deck into the four suit piles in order from Ace to King! You can move cards around the seven tableau piles, but be careful; you can only move a card onto another card if it is one rank lower and of the opposite color. Use the stock pile to draw new cards, and try to clear the tableau to win!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Wordified Logic:</h3>
+                
+                </details>
+        </details>`
+    };
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.4', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -448,6 +473,15 @@ app.get('/game_fruit_crush', isAuthenticated, (req, res) => {
         res.redirect('/');
     } else {
         res.render('games/fruitCrush/game_fruit_crush', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Fruit Crush', version: 'v1.0.0' });
+    }
+});
+
+app.get('/game_solitaire', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/solitaire/game_solitaire', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.0' });
     }
 });
 
@@ -528,6 +562,7 @@ io.on('connection', (socket) => {
             'Alchemy': 1200,
             'Wordle': 50,
             'Fruit Crush': 75,
+            'Solitaire': 115,
         };
 
         let user = data.user;

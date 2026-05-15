@@ -1,0 +1,1185 @@
+<%- include('../../partials/header') %>
+    <title>Solitaire</title>
+    <style>
+        #partials-header-version {
+            right: 845px;
+            top: 29px;
+        }
+
+        /* Control panel styling for buttons and status display */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 720px;
+            margin-bottom: 14px;
+        }
+
+        .Buttons {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: fit-content;
+            padding: 10px 16px;
+            background-color: #132b18;
+            border: 1px solid #4d664d;
+            border-radius: 8px;
+            color: #9bde9b;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        canvas {
+            width: 100px;
+            border: 1px solid #4d664d;
+            box-shadow: 0 0 16px rgb(13, 71, 71);
+            border-radius: 10px;
+            background: #081b10;
+            cursor: pointer;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .left-piles,
+        .right-piles {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .right-piles {
+            margin-left: auto;
+        }
+
+        .piles {
+            display: flex;
+            gap: 12px;
+        }
+
+        .gamePile,
+        #discard,
+        #deck,
+        #hpile,
+        #cpile,
+        #dpile,
+        #spile {
+            touch-action: none;
+            cursor: grab;
+            user-select: none;
+        }
+
+        body.dragging,
+        body.dragging .gamePile,
+        body.dragging #discard,
+        body.dragging #deck,
+        body.dragging #hpile,
+        body.dragging #cpile,
+        body.dragging #dpile,
+        body.dragging #spile {
+            cursor: grabbing;
+        }
+
+        #tableau {
+            margin-top: 18px;
+        }
+    </style>
+    </head>
+    <%- include('../../partials/gameSessions') %>
+
+        <body>
+            <div class="top-row">
+                <div class="left-piles">
+                    <canvas id="deck" width="100" height="140"></canvas>
+                    <canvas id="discard" width="100" height="140"></canvas>
+                </div>
+
+                <div class="right-piles">
+                    <canvas class='gamePile' id="hpile" width="100" height="140"></canvas>
+                    <canvas class='gamePile' id="cpile" width="100" height="140"></canvas>
+                    <canvas class='gamePile' id="dpile" width="100" height="140"></canvas>
+                    <canvas class='gamePile' id="spile" width="100" height="140"></canvas>
+                </div>
+            </div>
+
+            <div class="piles" id="tableau">
+            </div>
+
+            <div class="controls">
+                <div id="status" style="color: #ffdb5c; font-weight: bold; min-height: 20px;"></div>
+            </div>
+        </body>
+        <script type="text/javascript">
+
+            //Define all card suits and ranks for deck creation
+            const suits = ['S', 'H', 'D', 'C'];  //Spades, Hearts, Diamonds, Clubs
+            const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];  //All card values
+            var autocomplete = false;  //Flag to track if autocomplete has been offered
+
+            //Creates a standard 52-card deck with all cards initially face down
+            function createDeck() {
+                const deck = [];
+                const suitColors = { 'H': 'red', 'D': 'red', 'S': 'black', 'C': 'black' };
+                //Human-readable suit names for status messages
+                const suitNames = { 'H': 'Hearts', 'D': 'Diamonds', 'S': 'Spades', 'C': 'Clubs' };
+                const rankNames = { 'A': 'Ace', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10', 'J': 'Jack', 'Q': 'Queen', 'K': 'King' };
+
+                //Nocti stuff
+                for (const suit of suits) {
+                    for (const rank of ranks) {
+                        const id = suit + rank;  //Card ID like 'SH' for Spade-Ace
+                        //Create card object with all necessary properties
+                        deck.push({
+                            suit: suit,
+                            rank: rank,
+                            faceUp: false,  //All cards start face down
+                            id: id,
+                            image: `/variety/deck/${id}.png`,  //Path to card image file
+                            color: suitColors[suit],  //Red or Black for game rules
+                            label: `${rankNames[rank]} of ${suitNames[suit]}`  //User-friendly card name
+                        });
+                    }
+                }
+                return deck;
+            }
+
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    //Generate random index from 0 to i (inclusive)
+                    const j = Math.floor(Math.random() * (i + 1));
+                    //Swap elements at positions i and j
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            //Central data structure storing all card piles in the game
+            const piles = {
+                draw: [],           //Draw/stock pile (main deck)
+                discard: [],        //Waste/discard pile (cards drawn from deck)
+                suits: [[], [], [], []],  //4 suit foundations 
+                tableau: [[], [], [], [], [], [], []],
+                selected: null      //Pile for moving
+            };
+
+            const dragState = {
+                active: false,
+                source: null,
+                cards: [],
+                startX: 0,
+                startY: 0,
+                hasMoved: false,
+                offsetX: 0,
+                offsetY: 0
+            };
+
+            //Create drag canvas for visual drag feedback
+            const dragCanvas = document.createElement('canvas');
+            dragCanvas.id = 'dragCanvas';
+            dragCanvas.style.position = 'absolute';
+            dragCanvas.style.pointerEvents = 'none';
+            dragCanvas.style.zIndex = '1000';
+            dragCanvas.style.display = 'none';
+            document.body.appendChild(dragCanvas);
+
+            let suppressClick = false;
+
+            function getCanvasOffset(event, canvas) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top
+                };
+            }
+
+            function beginDrag(source) {
+                dragState.active = true;
+                dragState.source = source;
+                dragState.cards = source.cards || [];
+                dragState.hasMoved = false;
+                dragCanvas.style.display = 'none';
+                document.body.classList.add('dragging');
+            }
+
+            function clearDrag() {
+                dragState.active = false;
+                dragState.source = null;
+                dragState.cards = [];
+                dragState.startX = 0;
+                dragState.startY = 0;
+                dragState.offsetX = 0;
+                dragState.offsetY = 0;
+                dragCanvas.style.display = 'none';
+                dragState.hasMoved = false;
+                document.body.classList.remove('dragging');
+            }
+
+            function renderDrag() {
+                const ctx = dragCanvas.getContext('2d');
+                ctx.clearRect(0, 0, dragCanvas.width, dragCanvas.height);
+                for (let i = 0; i < dragState.cards.length; i++) {
+                    ctx.save();
+                    ctx.translate(0, i * 30);
+                    if (dragState.cards[i].faceUp) {
+                        drawCardFace(dragState.cards[i], ctx, dragCanvas);
+                    } else {
+                        drawCardBack(ctx, dragCanvas);
+                    }
+                    ctx.restore();
+                }
+            }
+
+            function performDrop(targetElement) {
+                const statusDiv = document.getElementById('status');
+                const targetId = targetElement?.id || '';
+
+                if (targetId.startsWith('tableau-')) {
+                    const targetCol = parseInt(targetId.split('-')[1], 10);
+                    if (Number.isNaN(targetCol)) {
+                        statusDiv.innerText = 'Invalid drop target';
+                        return;
+                    }
+                    dropToTableau(targetCol);
+                    return;
+                }
+
+                const suitTargets = {
+                    'hpile': 0,
+                    'cpile': 1,
+                    'dpile': 2,
+                    'spile': 3
+                }
+                if (targetId in suitTargets) {
+                    dropToSuit(suitTargets[targetId])
+                    return
+                }
+
+                statusDiv.innerText = 'Cannot drop card here'
+            }
+
+            function dropToTableau(targetCol) {
+                const targetPile = piles.tableau[targetCol]
+                const movingCard = dragState.cards[0]
+                const statusDiv = document.getElementById('status')
+
+                if (!movingCard) {
+                    statusDiv.innerText = 'No card to drop'
+                    return
+                }
+
+                if (!canPlaceOnTableau(movingCard, targetCol)) {
+                    statusDiv.innerText = `Cannot move ${movingCard.label} to that spot`;
+                    return
+                }
+
+                if (dragState.source.type == 'tableau') {
+                    const sourcePile = piles.tableau[dragState.source.col];
+                    const movingCards = sourcePile.slice(dragState.source.index);
+                    sourcePile.splice(dragState.source.index);
+                    targetPile.push(...movingCards);
+                    revealTopCard(sourcePile);
+                    statusDiv.innerText = `Moved ${movingCard.label}!`;
+                } else if (dragState.source.type == 'discard') {
+                    piles.discard.pop();
+                    targetPile.push(movingCard);
+                    statusDiv.innerText = `Moved ${movingCard.label} from waste!`;
+                } else if (dragState.source.type == 'suit') {
+                    const suitPile = piles.suits[dragState.source.suitIndex];
+                    suitPile.pop();
+                    targetPile.push(movingCard);
+                    statusDiv.innerText = `Moved ${movingCard.label} from foundation!`;
+                }
+                piles.selected = null;
+            }
+
+            function dropToSuit(suitIndex) {
+                const movingCard = dragState.cards[0];
+                const statusDiv = document.getElementById('status');
+
+                if (!movingCard) {
+                    statusDiv.innerText = 'No card to drop';
+                    return;
+                }
+
+                if (!canPlaceOnSuit(movingCard, suitIndex)) {
+                    statusDiv.innerText = `Cannot move ${movingCard.label} to that foundation`;
+                    return;
+                }
+
+                if (dragState.source.type == 'tableau') {
+                    if (dragState.source.index !== piles.tableau[dragState.source.col].length - 1) {
+                        statusDiv.innerText = 'Only the top card can move to a suit pile';
+                        return;
+                    }
+                    const sourcePile = piles.tableau[dragState.source.col];
+                    sourcePile.pop();
+                    revealTopCard(sourcePile);
+                } else if (dragState.source.type == 'discard') {
+                    piles.discard.pop();
+                } else if (dragState.source.type == 'suit') {
+                    const sourcePile = piles.suits[dragState.source.suitIndex];
+                    sourcePile.pop();
+                }
+
+                piles.suits[suitIndex].push(movingCard);
+                piles.selected = null;
+                statusDiv.innerText = `Moved ${movingCard.label} to foundation!`;
+            }
+
+            document.addEventListener('pointermove', (event) => {
+                if (!dragState.active) return;
+                const dx = event.clientX - dragState.startX;
+                const dy = event.clientY - dragState.startY;
+                if (!dragState.hasMoved && Math.hypot(dx, dy) > 8) {
+                    dragState.hasMoved = true;
+                    //Set up drag canvas
+                    dragCanvas.width = 100;
+                    dragCanvas.height = dragState.cards.length * 30 + 140;
+                    renderDrag();
+                    dragCanvas.style.display = 'block';
+                }
+                if (dragState.hasMoved) {
+                    dragCanvas.style.left = (event.clientX - dragState.offsetX) + 'px';
+                    dragCanvas.style.top = (event.clientY - dragState.offsetY) + 'px';
+                }
+            });
+
+            document.addEventListener('pointerup', (event) => {
+                if (!dragState.active) return;
+                if (dragState.hasMoved) {
+                    const target = document.elementFromPoint(event.clientX, event.clientY);
+                    performDrop(target);
+                    suppressClick = true;
+                }
+                clearDrag();
+                renderAll();
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!suppressClick) return;
+                event.preventDefault();
+                event.stopPropagation();
+                suppressClick = false;
+            }, true);
+
+            function handlePointerDownOnTableau(event, column) {
+                const canvas = event.currentTarget;
+                const pile = piles.tableau[column];
+                if (!pile || pile.length == 0) return;
+
+                const { x, y } = getCanvasOffset(event, canvas);
+                const selectedIndex = getTableauCardIndexAtY(pile, y);
+                const selectedCard = pile[selectedIndex];
+                if (!selectedCard || !selectedCard.faceUp) return;
+
+                dragState.startX = event.clientX;
+                dragState.startY = event.clientY;
+                dragState.offsetX = x;
+                dragState.offsetY = y - (selectedIndex * 30);
+                dragState.source = {
+                    type: 'tableau',
+                    col: column,
+                    index: selectedIndex,
+                    cards: pile.slice(selectedIndex)
+                };
+                beginDrag(dragState.source);
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            function handlePointerDownDiscard(event) {
+                if (piles.discard.length == 0) return;
+                const canvas = event.currentTarget;
+                const { x, y } = getCanvasOffset(event, canvas);
+                dragState.startX = event.clientX;
+                dragState.startY = event.clientY;
+                dragState.offsetX = x;
+                dragState.offsetY = y;
+                dragState.source = {
+                    type: 'discard',
+                    cards: [piles.discard[piles.discard.length - 1]]
+                };
+                beginDrag(dragState.source);
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            function handlePointerDownSuit(event, suitIndex) {
+                const suitPile = piles.suits[suitIndex];
+                if (suitPile.length == 0) return;
+                const canvas = event.currentTarget;
+                const { x, y } = getCanvasOffset(event, canvas);
+                dragState.startX = event.clientX;
+                dragState.startY = event.clientY;
+                dragState.offsetX = x;
+                dragState.offsetY = y;
+                dragState.source = {
+                    type: 'suit',
+                    suitIndex,
+                    cards: [suitPile[suitPile.length - 1]]
+                };
+                beginDrag(dragState.source);
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            //Cache for card face images to avoid reloading the same image multiple times
+            const cardImageCache = {};
+            //Pre-load card back image (used for face-down cards)
+            const backImageCache = new Image();
+            backImageCache.src = '/variety/deck/back.png';
+            backImageCache.onload = () => renderAll();  //Re-render when image loads
+
+            //Get or create cached image for a specific card - loads image only once
+            function getCachedImage(src) {
+                //Check if image is already cached
+                if (!cardImageCache[src]) {
+                    //Create new image and add to cache
+                    const img = new Image();
+                    img.src = src;
+                    //Re-render when image finishes loading
+                    img.onload = () => renderAll();
+                    cardImageCache[src] = img;
+                }
+                return cardImageCache[src];
+            }
+
+            //Initialize draw pile canvas and pre-load back image
+            const canvasDeck = document.getElementById('deck');
+            const ctxDeck = canvasDeck.getContext('2d');
+            const deckimg = new Image();
+            deckimg.src = '/variety/deck/back.png';
+            deckimg.onload = function () {
+                ctxDeck.drawImage(deckimg, 0, 0, canvasDeck.width, canvasDeck.height);
+            };
+
+            //Initialize suit pile canvases (Hearts, Clubs, Diamonds, Spades) with their icons
+            const canvasHeart = document.getElementById('hpile');
+            const contextHeart = canvasHeart.getContext('2d');
+            const heartimg = new Image();
+            heartimg.src = '/solitaire/heart.png';
+            heartimg.onload = function () {
+                contextHeart.drawImage(heartimg, 0, 0, canvasHeart.width, canvasHeart.height);
+            };
+
+            //Clubs foundation canvas
+            const canvasClub = document.getElementById('cpile');
+            const contextClub = canvasClub.getContext('2d');
+            const clubimg = new Image();
+            clubimg.src = '/solitaire/club.png';
+            clubimg.onload = function () {
+                contextClub.drawImage(clubimg, 0, 0, canvasClub.width, canvasClub.height);
+            };
+
+            //Diamonds foundation canvas
+            const canvasDiamond = document.getElementById('dpile');
+            const contextDiamond = canvasDiamond.getContext('2d');
+            const diamondimg = new Image();
+            diamondimg.src = '/solitaire/diamond.png';
+            diamondimg.onload = function () {
+                contextDiamond.drawImage(diamondimg, 0, 0, canvasDiamond.width, canvasDiamond.height);
+            };
+
+            //Spades foundation canvas
+            const canvasSpade = document.getElementById('spile');
+            const contextSpade = canvasSpade.getContext('2d');
+            const spadeimg = new Image();
+            spadeimg.src = '/solitaire/spade.png';
+            spadeimg.onload = function () {
+                contextSpade.drawImage(spadeimg, 0, 0, canvasSpade.width, canvasSpade.height);
+            };
+
+
+            function startGame() {
+                const deck = createDeck();
+                shuffle(deck);
+
+                //Clear all piles to start fresh game
+                piles.draw = [];
+                piles.discard = [];
+                piles.suits = [[], [], [], []];
+                piles.tableau = [[], [], [], [], [], [], []];
+                piles.selected = null;
+
+                //Deal cards to tableau following Klondike rules: column 0 gets 1 card, column 1 gets 2, etc.
+                for (let column = 0; column < 7; column++) {
+                    //Each column gets (column + 1) cards
+                    for (let stack = 0; stack <= column; stack++) {
+                        const card = deck.pop();
+                        //Only the top card in each column starts face up
+                        if (stack == column) {
+                            card.faceUp = true;
+                        }
+                        piles.tableau[column].push(card);
+                    }
+                }
+
+                //Remaining cards form the draw/stock pile
+                while (deck.length) {
+                    piles.draw.push(deck.pop());
+                }
+
+                renderAll();
+            }
+
+            const tableauContainer = document.getElementById('tableau');
+            for (let i = 0; i < 7; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.id = `tableau-${i}`;
+                canvas.className = 'gamePile';
+                canvas.width = 100;
+                canvas.addEventListener('click', (event) => selectTableauPile(i, event));
+                canvas.addEventListener('pointerdown', (event) => handlePointerDownOnTableau(event, i));
+                tableauContainer.appendChild(canvas);
+            }
+
+            //Parse selection string to determine what pile/card was selected
+            //Selection format: "discard" or "tableau-{column}-{index}" or "suit-{suitIndex}"
+            function parseSelection(selection) {
+                if (!selection) return null;
+                if (selection == 'discard') return { type: 'discard' };
+
+                const parts = selection.split('-');
+                if (parts[0] == 'tableau' && parts.length == 3) {
+                    return {
+                        type: 'tableau',
+                        col: parseInt(parts[1], 10),
+                        index: parseInt(parts[2], 10)  //Which card in the column was clicked
+                    };
+                }
+                if (parts[0] == 'suit' && parts.length == 2) {
+                    return {
+                        type: 'suit',
+                        suitIndex: parseInt(parts[1], 10)
+                    };
+                }
+                return null;
+            }
+
+            //Determine which card in a tableau pile was clicked based on Y coordinate
+            function getTableauCardIndexAtY(pile, y) {
+                const cardHeight = 140;
+                const cardOffset = 30;  //Vertical overlap between cards
+                //Iterate from bottom to top to find which card was clicked
+                for (let i = pile.length - 1; i >= 0; i--) {
+                    const cardY = i * cardOffset;
+                    if (y >= cardY && y <= cardY + cardHeight) {
+                        return i;  //Return the card index
+                    }
+                }
+                return pile.length - 1;  //Default to top card
+            }
+
+            //Set up click handlers for suit pile foundations
+            document.getElementById('hpile').addEventListener('click', () => selectSuitPile(0));  //Hearts
+            document.getElementById('cpile').addEventListener('click', () => selectSuitPile(1));  //Clubs
+            document.getElementById('dpile').addEventListener('click', () => selectSuitPile(2));  //Diamonds
+            document.getElementById('spile').addEventListener('click', () => selectSuitPile(3));  //Spades
+            document.getElementById('hpile').addEventListener('pointerdown', (event) => handlePointerDownSuit(event, 0));
+            document.getElementById('cpile').addEventListener('pointerdown', (event) => handlePointerDownSuit(event, 1));
+            document.getElementById('dpile').addEventListener('pointerdown', (event) => handlePointerDownSuit(event, 2));
+            document.getElementById('spile').addEventListener('pointerdown', (event) => handlePointerDownSuit(event, 3));
+
+            //Set up handlers for deck and waste pile
+            document.getElementById('deck').addEventListener('click', drawCard);  //Draw next card
+            document.getElementById('discard').addEventListener('click', selectDiscardPile);  //Select waste pile
+            document.getElementById('discard').addEventListener('pointerdown', handlePointerDownDiscard);  //Drag waste card
+
+            //Set up start button handler
+
+            renderAll();
+
+            //Draw next card from the deck or recycle waste pile back to draw pile
+            function drawCard() {
+                //If cards remain in draw pile, move top card to waste
+                if (piles.draw.length > 0) {
+                    const card = piles.draw.pop();
+                    card.faceUp = true;  //Reveal the card
+                    piles.discard.push(card);
+                }
+                //If draw pile is empty but waste pile has cards, recycle them
+                else if (piles.discard.length > 0) {
+                    //Move all waste cards back to draw pile
+                    while (piles.discard.length > 0) {
+                        const card = piles.discard.pop();
+                        piles.draw.push(card);
+                    }
+                }
+                renderAll();
+            }
+
+            function renderAll() {
+                renderDeck();        //Draw pile
+                renderDiscard();     //Waste pile
+                renderSuitPiles();   //Foundation piles
+                renderTableau();     //Tableau columns
+                winCheck();          //Check if player has won
+            }
+
+            //Render the draw/stock pile - shows back image if cards remain, "Empty" if none
+            function renderDeck() {
+                ctxDeck.clearRect(0, 0, canvasDeck.width, canvasDeck.height);
+                //Draw pile has cards
+                if (piles.draw.length > 0) {
+                    deckimg.onload = function () {
+                        ctxDeck.drawImage(deckimg, 0, 0, canvasDeck.width, canvasDeck.height);
+                    };
+                    //Draw the back image if it's already loaded
+                    if (deckimg.complete) {
+                        ctxDeck.drawImage(deckimg, 0, 0, canvasDeck.width, canvasDeck.height);
+                    }
+                }
+                //Draw pile is empty
+                else {
+                    ctxDeck.fillStyle = '#0b2b18';
+                    ctxDeck.fillRect(0, 0, canvasDeck.width, canvasDeck.height);
+                    ctxDeck.fillStyle = '#71bd8b';
+                    ctxDeck.font = 'bold 14px Arial';
+                    ctxDeck.textAlign = 'center';
+                    ctxDeck.textBaseline = 'middle';
+                    ctxDeck.fillText('Empty', canvasDeck.width / 2, canvasDeck.height / 2);
+                }
+            }
+
+            //Render the waste/discard pile - show up to 3 most recent cards with overlap
+            function renderDiscard() {
+                const canvasDiscard = document.getElementById('discard');
+                const ctxDiscard = canvasDiscard.getContext('2d');
+
+                const cardHeight = 140;
+                const cardWidth = 100;
+                const cardOffset = 30;
+                const visibleCount = Math.min(piles.discard.length, 3);  //Show max 3 cards
+                const requiredHeight = visibleCount > 0 ? cardHeight + (visibleCount - 1) * cardOffset : cardHeight;
+
+                //Resize canvas if needed to fit overlapped discard cards
+                if (canvasDiscard.height !== requiredHeight) {
+                    canvasDiscard.height = requiredHeight;
+                    canvasDiscard.style.height = requiredHeight + 'px';
+                }
+
+                if (canvasDiscard.width !== cardWidth) {
+                    canvasDiscard.width = cardWidth;
+                    canvasDiscard.style.width = cardWidth + 'px';
+                }
+
+                ctxDiscard.clearRect(0, 0, canvasDiscard.width, canvasDiscard.height);
+
+                //Waste pile has cards
+                if (piles.discard.length > 0) {
+                    const startIndex = Math.max(0, piles.discard.length - visibleCount);
+                    for (let i = startIndex; i < piles.discard.length; i++) {
+                        const card = piles.discard[i];
+                        const yOffset = (i - startIndex) * cardOffset;
+
+                        ctxDiscard.save();
+                        ctxDiscard.translate(0, yOffset);
+                        drawCardFace(card, ctxDiscard, canvasDiscard);
+                        if (piles.selected === 'discard' && i === piles.discard.length - 1) {
+                            ctxDiscard.shadowColor = 'yellow';
+                            ctxDiscard.shadowBlur = 10;
+                            ctxDiscard.strokeStyle = 'yellow';
+                            // Top border (thinner)
+                            ctxDiscard.beginPath();
+                            ctxDiscard.moveTo(-2, -2);
+                            ctxDiscard.lineTo(102, -2);
+                            ctxDiscard.lineWidth = 4;
+                            ctxDiscard.stroke();
+                            // Sides and bottom (thicker)
+                            ctxDiscard.beginPath();
+                            ctxDiscard.moveTo(-2, -2);
+                            ctxDiscard.lineTo(-2, 142);
+                            ctxDiscard.moveTo(102, -2);
+                            ctxDiscard.lineTo(102, 142);
+                            ctxDiscard.moveTo(-2, 142);
+                            ctxDiscard.lineTo(102, 142);
+                            ctxDiscard.lineWidth = 6;
+                            ctxDiscard.stroke();
+                        }
+                        ctxDiscard.restore();
+                    }
+                }
+                //Waste pile is empty
+                else {
+                    ctxDiscard.fillStyle = '#0b2b18';
+                    ctxDiscard.fillRect(0, 0, canvasDiscard.width, canvasDiscard.height);
+                    ctxDiscard.fillStyle = '#71bd8b';
+                    ctxDiscard.font = '12px Arial';
+                    ctxDiscard.textAlign = 'center';
+                    ctxDiscard.textBaseline = 'middle';
+                    ctxDiscard.fillText('Waste', canvasDiscard.width / 2, canvasDiscard.height / 2);
+                }
+
+            }
+
+            //Render the four suit foundation piles - show top card or suit icon if empty
+            function renderSuitPiles() {
+                const contexts = [contextHeart, contextClub, contextDiamond, contextSpade];
+                const canvases = [canvasHeart, canvasClub, canvasDiamond, canvasSpade];
+
+                const selection = parseSelection(piles.selected);
+
+                //Render each of the 4 suit foundations
+                for (let i = 0; i < 4; i++) {
+                    contexts[i].clearRect(0, 0, canvases[i].width, canvases[i].height);
+                    //If suit has cards, show the top card
+                    if (piles.suits[i].length > 0) {
+                        const card = piles.suits[i][piles.suits[i].length - 1];
+                        drawCardFace(card, contexts[i], canvases[i]);
+                        if (piles.selected === `suit-${i}`) {
+                            contexts[i].shadowColor = 'yellow';
+                            contexts[i].shadowBlur = 10;
+                            contexts[i].strokeStyle = 'yellow';
+                            // Top border (thinner)
+                            contexts[i].beginPath();
+                            contexts[i].moveTo(-2, -2);
+                            contexts[i].lineTo(102, -2);
+                            contexts[i].lineWidth = 4;
+                            contexts[i].stroke();
+                            // Sides and bottom (thicker)
+                            contexts[i].beginPath();
+                            contexts[i].moveTo(-2, -2);
+                            contexts[i].lineTo(-2, 142);
+                            contexts[i].moveTo(102, -2);
+                            contexts[i].lineTo(102, 142);
+                            contexts[i].moveTo(-2, 142);
+                            contexts[i].lineTo(102, 142);
+                            contexts[i].lineWidth = 6;
+                            contexts[i].stroke();
+                        }
+                        contexts[i].shadowColor = 'transparent';
+                        contexts[i].shadowBlur = 0;
+                    }
+                    //If suit is empty, show suit icon
+                    else {
+                        const images = [heartimg, clubimg, diamondimg, spadeimg];
+                        images[i].onload = function () {
+                            contexts[i].drawImage(images[i], 0, 0, canvases[i].width, canvases[i].height);
+                        };
+                        if (images[i].complete) {
+                            contexts[i].drawImage(images[i], 0, 0, canvases[i].width, canvases[i].height);
+                        }
+                    }
+
+                }
+            }
+
+            //Render all 7 tableau columns with dynamically sized canvases and selection highlights
+            function renderTableau() {
+                for (let col = 0; col < 7; col++) {
+                    const canvasId = `tableau-${col}`;
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas) continue;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    const pile = piles.tableau[col];
+
+                    const selection = parseSelection(piles.selected);
+
+                    //Calculate required canvas height based on number of cards
+                    const cardHeight = 140;
+                    const cardOffset = 30;  //Vertical overlap between cards
+                    const requiredHeight = pile.length > 0 ? cardHeight + (pile.length - 1) * cardOffset : cardHeight;
+
+                    //Resize canvas to fit all cards
+                    if (canvas.height !== requiredHeight) {
+                        canvas.height = requiredHeight;
+                        canvas.style.height = requiredHeight + 'px';
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    //Empty tableau column
+                    if (pile.length == 0) {
+                        ctx.fillStyle = '#0b2b18';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = '#71bd8b';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('Empty', canvas.width / 2, canvas.height / 2);
+                    }
+                    //Draw all cards in the column with proper overlap
+                    else {
+                        for (let i = 0; i < pile.length; i++) {
+                            const card = pile[i];
+                            const yOffset = i * cardOffset;
+
+                            ctx.save();
+                            ctx.translate(0, yOffset);
+
+                            if (card.faceUp) {
+                                drawCardFace(card, ctx, canvas);
+                            } else {
+                                drawCardBack(ctx, canvas);
+                            }
+
+                            if (selection && selection.type === 'tableau' && selection.col === col && i >= selection.index) {
+                                ctx.shadowColor = 'yellow';
+                                ctx.shadowBlur = 10;
+                                ctx.strokeStyle = 'yellow';
+                                // Top border (thinner)
+                                ctx.beginPath();
+                                ctx.moveTo(-2, -2);
+                                ctx.lineTo(102, -2);
+                                ctx.lineWidth = 4;
+                                ctx.stroke();
+                                // Sides and bottom (thicker)
+                                ctx.beginPath();
+                                ctx.moveTo(-2, -2);
+                                ctx.lineTo(-2, 142);
+                                ctx.moveTo(102, -2);
+                                ctx.lineTo(102, 142);
+                                ctx.moveTo(-2, 142);
+                                ctx.lineTo(102, 142);
+                                ctx.lineWidth = 6;
+                                ctx.stroke();
+                            }
+
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+
+            //Draw a face-up card image at current canvas context position
+            function drawCardFace(card, ctx, canvas) {
+                const img = getCachedImage(card.image);
+                const cardWidth = 100;
+                const cardHeight = 140;
+                //Only draw if image has loaded successfully
+                if (img.complete && img.naturalWidth > 0) {
+                    ctx.drawImage(img, 0, 0, cardWidth, cardHeight);
+                }
+            }
+
+            //Draw a face-down card (back image) at current canvas context position
+            function drawCardBack(ctx, canvas) {
+                const cardWidth = 100;
+                const cardHeight = 140;
+                //Only draw if back image has loaded successfully
+                if (backImageCache.complete && backImageCache.naturalWidth > 0) {
+                    ctx.drawImage(backImageCache, 0, 0, cardWidth, cardHeight);
+                }
+            }
+
+            //Convert card rank to number value for comparison (A=1, J=11, Q=12, K=13)
+            function getRankValue(rank) {
+                const rankMap = { 'A': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13 };
+                return rankMap[rank];
+            }
+
+            //Flip the top card of a pile face-up (used when cards are removed from below it)
+            function revealTopCard(pile) {
+                if (pile.length > 0 && !pile[pile.length - 1].faceUp) {
+                    pile[pile.length - 1].faceUp = true;
+                }
+            }
+
+            //Check if a card can be legally placed on a tableau column
+            //Rules: King on empty, or lower rank of opposite color on existing cards
+            function canPlaceOnTableau(card, targetCol) {
+                const targetPile = piles.tableau[targetCol];
+                //Empty tableau column - only Kings can be placed
+                if (targetPile.length == 0) {
+                    return getRankValue(card.rank) == 13;
+                }
+                //Check if card is one rank lower and opposite color
+                const topCard = targetPile[targetPile.length - 1];
+                const cardVal = getRankValue(card.rank);
+                const topVal = getRankValue(topCard.rank);
+
+                return cardVal == topVal - 1 && card.color !== topCard.color;
+            }
+
+            //Check if a card can be legally placed on a suit foundation pile
+            //Rules: Ace to start suit, then ascending order of same suit
+            function canPlaceOnSuit(card, suitIndex) {
+                const suitMap = { 'H': 0, 'C': 1, 'D': 2, 'S': 3 };  //Map suits to suitIndex
+                //Card must match the suit of the target foundation
+                if (suitMap[card.suit] !== suitIndex) return false;
+
+                const suitPile = piles.suits[suitIndex];
+                //Empty suit pile - only Ace can start
+                if (suitPile.length == 0) return getRankValue(card.rank) == 1;
+
+                //Check if card is one rank higher than top card
+                const topCard = suitPile[suitPile.length - 1];
+                const cardVal = getRankValue(card.rank);
+                const topVal = getRankValue(topCard.rank);
+
+                return cardVal == topVal + 1;
+            }
+
+            //Handle click on waste/discard pile - toggle selection
+            function selectDiscardPile() {
+                const statusDiv = document.getElementById('status');
+
+                //Cannot select empty waste pile
+                if (piles.discard.length == 0) {
+                    statusDiv.innerText = 'No cards in waste pile';
+                    return;
+                }
+
+                const card = piles.discard[piles.discard.length - 1];
+
+                //Toggle selection
+                if (piles.selected == 'discard') {
+                    piles.selected = null;  //Deselect
+                    statusDiv.innerText = 'Selection cleared';
+                } else {
+                    piles.selected = 'discard';  //Select waste pile
+                    statusDiv.innerText = `Selected: ${card.label} from waste`;
+                }
+                renderAll();
+            }
+
+            //Handle click on tableau column - select card or move selected card
+            function selectTableauPile(colIndex, event) {
+                const canvasId = `tableau-${colIndex}`;
+                const pile = piles.tableau[colIndex];
+                const statusDiv = document.getElementById('status');
+                const clickY = event.offsetY;  //Y position of click to determine which card was clicked
+
+                //Handle click on empty tableau column
+                if (!pile || pile.length == 0) {
+                    //If a card is selected, try to move it here
+                    if (piles.selected) {
+                        const selection = parseSelection(piles.selected);
+                        //Try to move card from another tableau column
+                        if (selection?.type == 'tableau') {
+                            const sourceCol = selection.col;
+                            const sourceIdx = selection.index;
+                            const sourcePile = piles.tableau[sourceCol];
+                            const sourceCard = sourcePile[sourceIdx];
+                            //Check if move is legal (only Kings on empty)
+                            if (canPlaceOnTableau(sourceCard, colIndex)) {
+                                //Move card and all cards below it
+                                const movingCards = sourcePile.splice(sourceIdx);
+                                revealTopCard(sourcePile);
+                                pile.push(...movingCards);
+                                piles.selected = null;
+                                statusDiv.innerText = `Moved ${sourceCard.label}!`;
+                                renderAll();
+                                return;
+                            }
+                        }
+                        //Try to move card from waste pile
+                        else if (piles.selected == 'discard') {
+                            const sourceCard = piles.discard[piles.discard.length - 1];
+                            //Check if move is legal (only Kings on empty)
+                            if (canPlaceOnTableau(sourceCard, colIndex)) {
+                                piles.discard.pop();
+                                pile.push(sourceCard);
+                                piles.selected = null;
+                                statusDiv.innerText = `Moved ${sourceCard.label} from waste!`;
+                                renderAll();
+                                return;
+                            }
+                        }
+                    }
+                    statusDiv.innerText = 'Empty pile - select a card to move';
+                    return;
+                }
+
+                //Determine which card in pile was clicked based on Y coordinate
+                const selectedIndex = getTableauCardIndexAtY(pile, clickY);
+                const clickedCard = pile[selectedIndex];
+
+                //Cannot select face-down cards
+                if (!clickedCard.faceUp) {
+                    statusDiv.innerText = 'Cannot select face-down cards';
+                    return;
+                }
+
+                //Parse current selection to determine if same card is being clicked
+                const currentSelection = parseSelection(piles.selected);
+                const isSameSelection = currentSelection?.type == 'tableau' && currentSelection.col == colIndex && currentSelection.index == selectedIndex;
+
+                //If same card is clicked, deselect it
+                if (isSameSelection) {
+                    piles.selected = null;
+                    statusDiv.innerText = 'Selection cleared';
+                    renderAll();
+                    return;
+                }
+
+                //If clicking different card in same pile, just update selection
+                if (currentSelection && currentSelection.type == 'tableau' && currentSelection.col == colIndex) {
+                    piles.selected = `tableau-${colIndex}-${selectedIndex}`;
+                    statusDiv.innerText = `Selected: ${clickedCard.label}`;
+                    renderAll();
+                    return;
+                }
+
+                //If nothing selected yet, select this card
+                if (piles.selected == null) {
+                    piles.selected = `tableau-${colIndex}-${selectedIndex}`;
+                    statusDiv.innerText = `Selected: ${clickedCard.label}`;
+                    renderAll();
+                    return;
+                }
+
+                //Try to move selected card/stack to this pile
+                const sourceSelection = parseSelection(piles.selected);
+                //Move from another tableau column
+                if (sourceSelection?.type == 'tableau') {
+                    const sourceCol = sourceSelection.col;
+                    const sourceIdx = sourceSelection.index;
+                    const sourcePile = piles.tableau[sourceCol];
+                    const sourceCard = sourcePile[sourceIdx];
+
+                    //If same column, just update selection
+                    if (sourceCol == colIndex) {
+                        piles.selected = `tableau-${colIndex}-${selectedIndex}`;
+                        statusDiv.innerText = `Selected: ${clickedCard.label}`;
+                        renderAll();
+                        return;
+                    }
+
+                    //Check if move is legal
+                    if (canPlaceOnTableau(sourceCard, colIndex)) {
+                        //Move the selected card and all cards below it
+                        const movingCards = sourcePile.splice(sourceIdx);
+                        revealTopCard(sourcePile);
+                        pile.push(...movingCards);
+                        piles.selected = null;
+                        statusDiv.innerText = `Moved ${sourceCard.label}!`;
+                    } else {
+                        statusDiv.innerText = `Cannot move ${sourceCard.label} to ${clickedCard.label}`;
+                    }
+                }
+                //Move from waste pile
+                else if (piles.selected == 'discard') {
+                    const sourceCard = piles.discard[piles.discard.length - 1];
+
+                    //Check if move is legal
+                    if (canPlaceOnTableau(sourceCard, colIndex)) {
+                        piles.discard.pop();
+                        pile.push(sourceCard);
+                        piles.selected = null;
+                        statusDiv.innerText = `Moved ${sourceCard.label} from waste!`;
+                    } else {
+                        statusDiv.innerText = `Cannot move ${sourceCard.label} from waste to ${clickedCard.label}`;
+                    }
+                } else if (sourceSelection?.type == 'suit') {
+                    const suitPile = piles.suits[sourceSelection.suitIndex];
+                    const sourceCard = suitPile[suitPile.length - 1];
+
+                    if (canPlaceOnTableau(sourceCard, colIndex)) {
+                        suitPile.pop();
+                        pile.push(sourceCard);
+                        piles.selected = null;
+                        statusDiv.innerText = `Moved ${sourceCard.label} from ${['Hearts', 'Clubs', 'Diamonds', 'Spades'][sourceSelection.suitIndex]}!`;
+                    } else {
+                        statusDiv.innerText = `Cannot move ${sourceCard.label} from suit pile to ${clickedCard.label}`;
+                    }
+                }
+
+                renderAll();
+            }
+
+            //Handle click on suit foundation pile - move selected card if legal
+            function selectSuitPile(suitIndex) {
+                const statusDiv = document.getElementById('status');
+                const suitNames = ['Hearts', 'Clubs', 'Diamonds', 'Spades'];
+                const suitPile = piles.suits[suitIndex];
+
+                const currentSelection = parseSelection(piles.selected);
+
+                //If no card is selected, allow selecting the top card from this suit foundation
+                if (piles.selected == null) {
+                    if (suitPile.length == 0) {
+                        statusDiv.innerText = `${suitNames[suitIndex]} is empty`;
+                        return;
+                    }
+                    piles.selected = `suit-${suitIndex}`;
+                    const card = suitPile[suitPile.length - 1];
+                    statusDiv.innerText = `Selected: ${card.label} from ${suitNames[suitIndex]}`;
+                    renderAll();
+                    return;
+                }
+
+                //If the same suit foundation is selected, deselect it
+                if (currentSelection?.type == 'suit' && currentSelection.suitIndex == suitIndex) {
+                    piles.selected = null;
+                    statusDiv.innerText = 'Selection cleared';
+                    renderAll();
+                    return;
+                }
+
+                //If another suit foundation is currently selected, switch selection to this one
+                if (currentSelection?.type == 'suit' && currentSelection.suitIndex !== suitIndex) {
+                    if (suitPile.length == 0) {
+                        statusDiv.innerText = `${suitNames[suitIndex]} is empty`;
+                        return;
+                    }
+                    piles.selected = `suit-${suitIndex}`;
+                    const card = suitPile[suitPile.length - 1];
+                    statusDiv.innerText = `Selected: ${card.label} from ${suitNames[suitIndex]}`;
+                    renderAll();
+                    return;
+                }
+
+                //Move selected tableau or waste card to this suit foundation
+                if (currentSelection?.type == 'tableau') {
+                    const sourceCol = currentSelection.col;
+                    const sourceIdx = currentSelection.index;
+                    const sourcePile = piles.tableau[sourceCol];
+                    const sourceCard = sourcePile[sourceIdx];
+
+                    if (sourceIdx !== sourcePile.length - 1) {
+                        statusDiv.innerText = 'Only the top card can move to a suit pile';
+                        return;
+                    }
+
+                    if (canPlaceOnSuit(sourceCard, suitIndex)) {
+                        sourcePile.pop();
+                        revealTopCard(sourcePile);
+                        piles.suits[suitIndex].push(sourceCard);
+                        piles.selected = null;
+                        statusDiv.innerText = `Moved ${sourceCard.label} to ${suitNames[suitIndex]}!`;
+                        renderAll();
+                    } else {
+                        statusDiv.innerText = `Cannot move ${sourceCard.label} to ${suitNames[suitIndex]}`;
+                    }
+                } else if (piles.selected == 'discard') {
+                    const sourceCard = piles.discard[piles.discard.length - 1];
+
+                    if (canPlaceOnSuit(sourceCard, suitIndex)) {
+                        piles.discard.pop();
+                        piles.suits[suitIndex].push(sourceCard);
+                        piles.selected = null;
+                        statusDiv.innerText = `Moved ${sourceCard.label} from waste to ${suitNames[suitIndex]}!`;
+                        renderAll();
+                    } else {
+                        statusDiv.innerText = `Cannot move ${sourceCard.rank}${sourceCard.suit} from waste to ${suitNames[suitIndex]}`;
+                    }
+                } else if (currentSelection?.type == 'suit') {
+                    statusDiv.innerText = 'Deselect the current suit card before choosing another destination';
+                }
+            }
+
+            // 40/60 AI ratio lwk but Im gonna get jumped for it
+
+            //Check if player has won
+            function winCheck() {
+                const statusDiv = document.getElementById('status');
+                //Check if all 4 suit piles have all 13 cards each
+                if (piles.suits.every(suitPile => suitPile.length == 13)) {
+                    //Create and display win screen overlay
+                    statusDiv.innerHTML = `Congratulations You Won`
+                    statusDiv.style.color = 'green';
+                }
+            }
+
+            startGame();  //Start the game immediately on page load
+        </script>
+
+        </html>
