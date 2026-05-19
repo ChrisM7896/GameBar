@@ -295,6 +295,8 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
         changelog: `<details>
                 <summary class="summaries">Changelog</summary>
                 <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <div class="changelog-header">v1.2.2 - Bug Fix - 5/19/2026</div>
+                <li class="innerli">Fixed issue with game load</li>
                 <div class="changelog-header">v1.2.1 - Bug Fix - 4/27/2026</div>
                 <li class="innerli">Fixed one-time purchase not saving properly</li>
                 <li class="innerli">Fixed issue with Osama Bin Laden</li>

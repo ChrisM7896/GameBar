@@ -6,7 +6,7 @@ socket.emit('getElements');
 socket.on('elementsData', (elementsData) => {
     elementsObject = elementsData;
     totalElements = elementsObject.length;
-    console.log('retrieved')
+    console.log('retrieved. Total elements: ' + totalElements);
     socket.emit('getUserElements', user);
 });
 
@@ -18,6 +18,49 @@ socket.on('userElementsData', (userElements) => {
                 totalUnlockedElements++;
             }
         });
+    });
+
+    
+
+    document.getElementById("sidebarHeader").innerHTML = `Elements (${totalUnlockedElements}/${totalElements})`
+    elementsObject.forEach(element => {
+        let button = document.createElement("button");
+        
+        if (element.locked == false) {
+            button.innerHTML = element.text;
+            button.draggable = true;
+            button.disabled = false;
+            button.ondragstart = dragstartHandler;
+            button.onclick = spawn;
+            button.className = 'elementButton';
+        } else {
+            button.innerHTML = "🔒 ";
+            for (let char of element.name) {
+                if (char == ' ') {
+                    button.innerHTML += ' ';
+                } else {
+                    button.innerHTML += '?';
+                }
+            }
+            button.className = 'elementButton';
+            button.draggable = false;
+            button.disabled = true;
+        }
+
+        //////////////////////////////////////////////////////
+        
+        // COMMENT ABOVE AND UNCOMMENT BELOW FOR TESTING ↓↓↓
+
+        // button.innerHTML = element.text;
+        // button.draggable = true;
+        // button.disabled = false;
+        // button.ondragstart = dragstartHandler;
+        // button.onclick = spawn;
+        // button.className = 'elementButton';
+
+        //////////////////////////////////////////////////////
+        button.id = (element.name + '-og')
+        document.getElementById(`${element.category}`).appendChild(button);
     });
 });
 

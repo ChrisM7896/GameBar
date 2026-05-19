@@ -168,51 +168,6 @@
             elementsOn = []
         }
 
-        window.onload = function () {
-            setTimeout(() => {
-                document.getElementById("sidebarHeader").innerHTML = `Elements (${totalUnlockedElements}/${totalElements})`
-                elementsObject.forEach(element => {
-                    let button = document.createElement("button");
-                    
-                    if (element.locked == false) {
-                        button.innerHTML = element.text;
-                        button.draggable = true;
-                        button.disabled = false;
-                        button.ondragstart = dragstartHandler;
-                        button.onclick = spawn;
-                        button.className = 'elementButton';
-                    } else {
-                        button.innerHTML = "🔒 ";
-                        for (let char of element.name) {
-                            if (char == ' ') {
-                                button.innerHTML += ' ';
-                            } else {
-                                button.innerHTML += '?';
-                            }
-                        }
-                        button.className = 'elementButton';
-                        button.draggable = false;
-                        button.disabled = true;
-                    }
-
-                    //////////////////////////////////////////////////////
-                    
-                    // COMMENT ABOVE AND UNCOMMENT BELOW FOR TESTING ↓↓↓
-
-                    // button.innerHTML = element.text;
-                    // button.draggable = true;
-                    // button.disabled = false;
-                    // button.ondragstart = dragstartHandler;
-                    // button.onclick = spawn;
-                    // button.className = 'elementButton';
-
-                    //////////////////////////////////////////////////////
-                    button.id = (element.name + '-og')
-                    document.getElementById(`${element.category}`).appendChild(button);
-                });
-            }, 100);
-        }
-
         function spawn(ev, pos) {
             const data = ev.target.id;
             const original = document.getElementById(data);
