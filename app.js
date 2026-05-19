@@ -460,7 +460,7 @@ app.get('/game_alchemy', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Alchemy', version: 'v1.2.1' });
+        res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Alchemy', version: 'v1.2.2' });
     }
 });
 
