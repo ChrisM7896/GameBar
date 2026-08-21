@@ -120,7 +120,7 @@
             //Define all card suits and ranks for deck creation
             const suits = ['S', 'H', 'D', 'C'];  //Spades, Hearts, Diamonds, Clubs
             const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];  //All card values
-            var autocomplete = false;  //Flag to track if autocomplete has been offered
+            // var autocomplete = false;  //Flag to track if autocomplete has been offered
 
             //Creates a standard 52-card deck with all cards initially face down
             function createDeck() {
@@ -618,6 +618,7 @@
                 renderDiscard();     //Waste pile
                 renderSuitPiles();   //Foundation piles
                 renderTableau();     //Tableau columns
+                // autocheckwin();      //Check if autocomplete is available
                 winCheck();          //Check if player has won
             }
 
@@ -1167,6 +1168,27 @@
             }
 
             // 40/60 AI ratio lwk but Im gonna get jumped for it
+
+            // AUTOCOMPLETE FUNCTION ↓↓↓ (needs rework in the future)
+            // if (faceUpCount == 52 && autocomplete == false) {
+            //     const statusDiv = document.getElementById('status');
+            //     const quickWin = document.createElement('button');
+            //     quickWin.id = 'quickWin';
+            //     quickWin.class = 'Buttons';
+            //     quickWin.innerText = 'Auto Complete';
+
+            //     document.body.appendChild(quickWin);
+            //     document.getElementById('quickWin').addEventListener('click', () => {
+            //         let win = document.createElement('div');
+            //         win.id = 'winScreen'
+            //         win.innerHTML = `Congratulations You Won`
+
+            //         document.body.appendChild(win);
+            //     });
+
+            //     statusDiv.innerText = 'All cards are face up! You can win by moving them to the suit piles!';
+            //     autocomplete = true
+            // }
 
             //Check if player has won
             function winCheck() {
