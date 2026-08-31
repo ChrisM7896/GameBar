@@ -141,7 +141,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5' });
+                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6' });
                 }
             });
         }
@@ -151,7 +151,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5' });
+    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -209,7 +209,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -248,7 +248,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 }
 );
 
@@ -285,7 +285,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -332,7 +332,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -367,7 +367,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
@@ -396,7 +396,7 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/solitaire', isAuthenticated, (req, res) => {
@@ -425,7 +425,41 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.5', data: data });
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
+});
+
+app.get('/sudoku', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic puzzle game, this singleplayer game challenges the player's logic and problem solving skills, as they try to fill in the 9x9 grid with numbers 1-9 without repeating any numbers in a row, column, or 3x3 subgrid. <br><br> This project is the eighth completed Gamebar game, and the first one completed by Truit, in only a few days!`,
+        developer: 'Truit Elwell',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Sudoku Released - 8/31/2026</div>
+        <li class="innerli">Initial release of Sudoku on Gamebar</li>
+        </details>`,
+        game: 'Sudoku',
+        preview: `<img id="previewImg" src="/sudoku/sudokupreview.png" alt="Sudoku Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Try to fill in the 9x9 grid with numbers 1-9 without repeating any numbers in a row, column, or 3x3 subgrid. Use logic and deduction to figure out where each number goes. You can click the notes emoji to add placeholder numbers, or the numbers emoji to input the actual numbers.<br><br>You have 3 lives. Good luck!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Player loads the page and a new instance of a Game is created</li>
+                <li class="innerli">Upon creation of a Game class, it randomly fills a grid with numbers and makes sure they follow the rules of Sudoku</li>
+                <li class="innerli">After the grid is generated, it is stored to the Game's solution property</li>
+                <li class="innerli">The solution is then taken and numbers are randomly removed according to the set difficulty</li>
+                <li class="innerli">This is stored to the Game's unsolved property</li>
+                <li class="innerli">There is another array called "currentGrid" that is set to the value of the unsolved puzzle</li>
+                <li class="innerli">When the player is in number mode and places a number somewhere in the grid, it compares the currentGrid to the game's solution</li>
+                <li class="innerli">If the number placed is not the same as the number in the same spot of the solution, the player loses a heart</li>
+                <li class="innerli">If the player is out of hearts, the screen clears and tells the player that they lost</li>
+                <li class="innerli">If the currentGrid matches the game's solved grid, the screen clears and tells the player that they won</li>
+                </details>
+        </details>`
+    };
+    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.6', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -488,6 +522,15 @@ app.get('/game_solitaire', isAuthenticated, (req, res) => {
         res.redirect('/');
     } else {
         res.render('games/solitaire/game_solitaire', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.0' });
+    }
+});
+
+app.get('/game_sudoku', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/sudoku/game_sudoku', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.0' });
     }
 });
 
@@ -567,8 +610,9 @@ io.on('connection', (socket) => {
             'Stack': 40,
             'Alchemy': 1200,
             'Wordle': 50,
-            'Fruit Crush': 75,
+            'Fruit Crush': 100,
             'Solitaire': 115,
+            'Sudoku': 85,
         };
 
         let user = data.user;
