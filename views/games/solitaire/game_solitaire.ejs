@@ -1,95 +1,104 @@
 <%- include('../../partials/header') %>
-    <title>Solitaire</title>
-    <style>
-        #partials-header-version {
-            right: 845px;
-            top: 29px;
-        }
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/solitaire/logoSolitaire.png';
+        document.head.appendChild(link);
+    </script>
 
-        /* Control panel styling for buttons and status display */
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-width: 720px;
-            margin-bottom: 14px;
-        }
+    <head>
+        <title>Solitaire</title>
+        <style>
+            #partials-header-version {
+                right: 845px;
+                top: 29px;
+            }
 
-        .Buttons {
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
-            width: fit-content;
-            padding: 10px 16px;
-            background-color: #132b18;
-            border: 1px solid #4d664d;
-            border-radius: 8px;
-            color: #9bde9b;
-            font-weight: bold;
-            cursor: pointer;
-        }
+            /* Control panel styling for buttons and status display */
+            .controls {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-width: 720px;
+                margin-bottom: 14px;
+            }
 
-        canvas {
-            width: 100px;
-            border: 1px solid #4d664d;
-            box-shadow: 0 0 16px rgb(13, 71, 71);
-            border-radius: 10px;
-            background: #081b10;
-            cursor: pointer;
-        }
+            .Buttons {
+                display: flex;
+                justify-content: flex-start;
+                align-items: flex-start;
+                width: fit-content;
+                padding: 10px 16px;
+                background-color: #132b18;
+                border: 1px solid #4d664d;
+                border-radius: 8px;
+                color: #9bde9b;
+                font-weight: bold;
+                cursor: pointer;
+            }
 
-        .top-row {
-            display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 16px;
-            width: 100%;
-        }
+            canvas {
+                width: 100px;
+                border: 1px solid #4d664d;
+                box-shadow: 0 0 16px rgb(13, 71, 71);
+                border-radius: 10px;
+                background: #081b10;
+                cursor: pointer;
+            }
 
-        .left-piles,
-        .right-piles {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
+            .top-row {
+                display: flex;
+                justify-content: flex-start;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                width: 100%;
+            }
 
-        .right-piles {
-            margin-left: auto;
-        }
+            .left-piles,
+            .right-piles {
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+            }
 
-        .piles {
-            display: flex;
-            gap: 12px;
-        }
+            .right-piles {
+                margin-left: auto;
+            }
 
-        .gamePile,
-        #discard,
-        #deck,
-        #hpile,
-        #cpile,
-        #dpile,
-        #spile {
-            touch-action: none;
-            cursor: grab;
-            user-select: none;
-        }
+            .piles {
+                display: flex;
+                gap: 12px;
+            }
 
-        body.dragging,
-        body.dragging .gamePile,
-        body.dragging #discard,
-        body.dragging #deck,
-        body.dragging #hpile,
-        body.dragging #cpile,
-        body.dragging #dpile,
-        body.dragging #spile {
-            cursor: grabbing;
-        }
+            .gamePile,
+            #discard,
+            #deck,
+            #hpile,
+            #cpile,
+            #dpile,
+            #spile {
+                touch-action: none;
+                cursor: grab;
+                user-select: none;
+            }
 
-        #tableau {
-            margin-top: 18px;
-        }
-    </style>
+            body.dragging,
+            body.dragging .gamePile,
+            body.dragging #discard,
+            body.dragging #deck,
+            body.dragging #hpile,
+            body.dragging #cpile,
+            body.dragging #dpile,
+            body.dragging #spile {
+                cursor: grabbing;
+            }
+
+            #tableau {
+                margin-top: 18px;
+            }
+        </style>
     </head>
     <%- include('../../partials/gameSessions') %>
 

@@ -406,6 +406,8 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.1 - Favicon Fix - 9/01/2026</div>
+        <li class="innerli">Fixed favicon not showing up</li>
         <div class="changelog-header">v1.0.0 - Solitaire Released - 5/15/2026</div>
         <li class="innerli">Initial release of Solitaire on Gamebar</li>
         </details>`,
@@ -521,7 +523,7 @@ app.get('/game_solitaire', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/solitaire/game_solitaire', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.0' });
+        res.render('games/solitaire/game_solitaire', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.1' });
     }
 });
 
