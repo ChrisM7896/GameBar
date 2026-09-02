@@ -437,7 +437,7 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
-        <div class="changelog-header">v1.0.0 - Sudoku Released - 8/31/2026</div>
+        <div class="changelog-header">v1.0.0 - Sudoku Released - 9/01/2026</div>
         <li class="innerli">Initial release of Sudoku on Gamebar</li>
         </details>`,
         game: 'Sudoku',
