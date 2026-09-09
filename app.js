@@ -134,7 +134,7 @@ app.get('/', isAuthenticated, (req, res) => {
                 } else {
                     req.session.gkey = row ? row.gkey : undefined;
 
-                    if (req.session.user == 'Chris' || req.session.user == 'JanCr' || req.session.user == 'Kris Bowman' || req.session.user == 'Dylan Anderson') {
+                    if (req.session.user == 'Chris' || req.session.user == 'Truit Elwell' || req.session.user == 'Kris Bowman' || req.session.user == 'Dylan Anderson') {
                         managers[req.session.user] = req.session.gkey;
                         console.log(`Manager ${req.session.user} loaded index.`);
                     } else {

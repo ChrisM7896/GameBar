@@ -40,8 +40,8 @@ document.addEventListener('mousemove', (e) => {
         mouse.y < gridTop ||
         mouse.y >= gridTop + gridPixelSize
     ) {
-        mouse.gridX = -1
-        mouse.gridY = -1
+        mouse.gridX = 0
+        mouse.gridY = 0
         return mouse.onGrid = false
     }
 
@@ -66,10 +66,15 @@ document.addEventListener('keydown', (e) => {
     let x = mouse.selectedSquare.x
     let y = mouse.selectedSquare.y
 
+    if (e.key == 'n') return placeMode = 'nums'
+    if (e.key == 'd') return placeMode = 'draft'
+
     if (!Number.isFinite(mouse.selectedSquare.x)) return
+
 
     let num = Number(e.key)
     if (e.key == 'Backspace' || e.key == '0') {
+        if (currentGrid[y][x] && currentGrid[y][x] === game.solution[y][x]) return
         let foo = drafts.find(d => d.x == x && d.y == y)
         if (foo) foo.nums = []
         return currentGrid[y][x] = 0
@@ -78,7 +83,7 @@ document.addEventListener('keydown', (e) => {
     if (!Number.isFinite(num)) return
 
     if (placeMode == 'nums') {
-        if (currentGrid[y][x] === num) return
+        if (currentGrid[y][x] === game.solution[y][x]) return
         let foo = drafts.find(d => d.x == x && d.y == y)
         if (foo) foo.nums = []
         currentGrid[y][x] = num
@@ -165,8 +170,10 @@ function main() {
 
     // Draw mouseover square
     ctx.fillStyle = '#151b1b'
-    if (Number.isFinite(mouse.selectedSquare.x)) ctx.fillRect(canvas.width / 2 - cellSize * (rank * rank) / 2 + cellSize * mouse.selectedSquare.x, 75 + cellSize * mouse.selectedSquare.y, cellSize, cellSize)
-    else if (mouse.onGrid && !Number.isFinite(mouse.selectedSquare.x)) ctx.fillRect(canvas.width / 2 - cellSize * (rank * rank) / 2 + cellSize * mouse.gridX, 75 + cellSize * mouse.gridY, cellSize, cellSize)
+    if (Number.isFinite(mouse.selectedSquare.x))
+        ctx.fillRect(canvas.width / 2 - cellSize * (rank * rank) / 2 + cellSize * mouse.selectedSquare.x, 75 + cellSize * mouse.selectedSquare.y, cellSize, cellSize)
+    else if (mouse.onGrid && !Number.isFinite(mouse.selectedSquare.x))
+        ctx.fillRect(canvas.width / 2 - cellSize * (rank * rank) / 2 + cellSize * mouse.gridX, 75 + cellSize * mouse.gridY, cellSize, cellSize)
     ctx.fillStyle = 'black'
 
     // Draw grid
@@ -174,14 +181,20 @@ function main() {
         for (let j = 0; j < rank * rank; j++) {
             ctx.fillStyle = '#4d664d'
             if (currentGrid[j][i] && game.solution[j][i] != currentGrid[j][i]) {
-                ctx.fillStyle = '#b62424'
+                ctx.fillStyle = '#4e1515'
                 ctx.fillRect(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize, 75 + j * cellSize, cellSize, cellSize)
                 ctx.fillStyle = 'black'
             }
-            ctx.fillText(`${currentGrid[j][i] || ''}`, canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize + cellSize / 2, 75 + j * cellSize + cellSize / 2)
+
+            let num = currentGrid[j][i] || ''
+            ctx.fillStyle = '#1f261f'
+            if (Number.isFinite(currentGrid[mouse.gridY][mouse.gridX]) && num === currentGrid[mouse.gridY][mouse.gridX] && !(currentGrid[j][i] && game.solution[j][i] != currentGrid[j][i])) ctx.fillRect(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize,
+                75 + j * cellSize,
+                cellSize, cellSize)
+            ctx.fillStyle = '#4d664d'
+            ctx.fillText(`${num}`, canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize + cellSize / 2, 75 + j * cellSize + cellSize / 2)
         }
 
-        
         ctx.lineWidth = i % rank == 0 ? 6 : 3
         ctx.beginPath()
         ctx.moveTo(canvas.width / 2 - cellSize * (rank * rank) / 2, 75 + i * cellSize)
