@@ -19,7 +19,9 @@ let mouse = {
     gridY: 0,
     onGrid: false,
     selectedSquare: { x: null, y: null },
-    hovering: ''
+    hovering: '',
+    draftShrink: 0,
+    numsShrink: 0
 }
 
 document.addEventListener('mousemove', (e) => {
@@ -66,8 +68,8 @@ document.addEventListener('keydown', (e) => {
     let x = mouse.selectedSquare.x
     let y = mouse.selectedSquare.y
 
-    if (e.key == 'n') return placeMode = 'nums'
-    if (e.key == 'd') return placeMode = 'draft'
+    if (['z', 'q', 'n', '-'].includes(e.key)) return placeMode = 'nums'
+    if (['x', 'e', 'd', '='].includes(e.key) || e.key == 'x') return placeMode = 'draft'
 
     if (!Number.isFinite(mouse.selectedSquare.x)) return
 
@@ -98,6 +100,11 @@ document.addEventListener('keydown', (e) => {
 let cellSize = 0
 let buttons = { x: 0, y: 0, w: 0, h: 0 }
 let placeMode = 'nums'
+
+const numsImg = new Image()
+numsImg.src = '/sudoku/numbers.png'
+const draftImg = new Image()
+draftImg.src = '/sudoku/memo.png'
 
 // Setup
 let hearts = 3
@@ -142,16 +149,41 @@ function main() {
     ctx.font = `${cellSize / 1.75}px Arial`
     ctx.fillText(`${'❤️'.repeat(Math.max(hearts, 0))}${'💔'.repeat(Math.max(0, 3 - hearts))}`, canvas.width / 2 - cellSize * (rank * rank) / 2, 37.5)
     ctx.textAlign = 'right'
-    ctx.fillText('📝 🔢', canvas.width / 2 + cellSize * (rank * rank) / 2, 37.5)
-    let metrics = ctx.measureText('📝 🔢')
-    buttons.w = metrics.width
-    buttons.h = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+    buttons.w = 120
+    buttons.h = 50
     buttons.x = canvas.width / 2 + cellSize * (rank * rank) / 2 - buttons.w
     buttons.y = 37.5 - buttons.h / 2
+
+    const maxShrink = 6
+    const easeIn = 0.25
+    const easeOut = 0.2 // slower return to full size
+
+    const targetDraft = mouse.hovering === 'draft' ? maxShrink : 0
+    const targetNums = mouse.hovering === 'nums' ? maxShrink : 0
+
+    const draftEase = targetDraft > mouse.draftShrink ? easeIn : easeOut
+    const numsEase = targetNums > mouse.numsShrink ? easeIn : easeOut
+
+    mouse.draftShrink += (targetDraft - mouse.draftShrink) * draftEase
+    mouse.numsShrink += (targetNums - mouse.numsShrink) * numsEase
+
+    if (Math.abs(targetDraft - mouse.draftShrink) < 0.01) mouse.draftShrink = targetDraft
+    if (Math.abs(targetNums - mouse.numsShrink) < 0.01) mouse.numsShrink = targetNums
+
+    let offDraft = mouse.draftShrink
+    let offNums = mouse.numsShrink
+
+    ctx.drawImage(draftImg, buttons.x + offDraft / 2, buttons.y + offDraft / 2, buttons.w / 2 - 10 - offDraft, buttons.h - offDraft)
+    ctx.drawImage(numsImg, buttons.x + buttons.w / 2 + 10 + offNums / 2, buttons.y + offNums / 2, buttons.w / 2 - 10 - offNums, buttons.h - offNums)
+
+    if (mouse.hovering) document.body.style.cursor = 'pointer'
+    else document.body.style.cursor = 'default'
+
     ctx.font = `${cellSize / 2}px Arial`
     ctx.textAlign = 'center'
 
-    if (hearts === 0) {
+    if (hearts <= 0) {
+        hearts = 0
         ctx.font = `${cellSize}px Arial`
         ctx.fillStyle = '#4d664d'
         ctx.textBaseline = 'middle'
@@ -176,7 +208,7 @@ function main() {
         ctx.fillRect(canvas.width / 2 - cellSize * (rank * rank) / 2 + cellSize * mouse.gridX, 75 + cellSize * mouse.gridY, cellSize, cellSize)
     ctx.fillStyle = 'black'
 
-    // Draw grid
+    // Draw grid contents
     for (let i = 0; i < rank * rank; i++) {
         for (let j = 0; j < rank * rank; j++) {
             ctx.fillStyle = '#4d664d'
@@ -194,18 +226,6 @@ function main() {
             ctx.fillStyle = '#4d664d'
             ctx.fillText(`${num}`, canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize + cellSize / 2, 75 + j * cellSize + cellSize / 2)
         }
-
-        ctx.lineWidth = i % rank == 0 ? 6 : 3
-        ctx.beginPath()
-        ctx.moveTo(canvas.width / 2 - cellSize * (rank * rank) / 2, 75 + i * cellSize)
-        ctx.lineTo(canvas.width / 2 + cellSize * (rank * rank) / 2, 75 + i * cellSize)
-
-        ctx.moveTo(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize, 75)
-        ctx.lineTo(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize, 75 + rank * rank * cellSize)
-        ctx.strokeStyle = '#4d664d'
-        ctx.stroke()
-
-
     }
 
     // Draw draft numbers
@@ -244,8 +264,20 @@ function main() {
         }
     }
 
-    ctx.lineWidth = 6
+    // Draw grid lines last so they stay above highlights and fills
+    ctx.strokeStyle = '#4d664d'
+    for (let i = 0; i < rank * rank; i++) {
+        ctx.lineWidth = i % rank == 0 ? 6 : 3
+        ctx.beginPath()
+        ctx.moveTo(canvas.width / 2 - cellSize * (rank * rank) / 2, 75 + i * cellSize)
+        ctx.lineTo(canvas.width / 2 + cellSize * (rank * rank) / 2, 75 + i * cellSize)
 
+        ctx.moveTo(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize, 75)
+        ctx.lineTo(canvas.width / 2 - (cellSize * (rank * rank) / 2) + i * cellSize, 75 + rank * rank * cellSize)
+        ctx.stroke()
+    }
+
+    ctx.lineWidth = 6
     ctx.strokeRect(canvas.width / 2 - cellSize * (rank * rank) / 2, 75, rank * rank * cellSize, rank * rank * cellSize)
 
 
