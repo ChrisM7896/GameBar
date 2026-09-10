@@ -133,7 +133,7 @@ app.get('/', isAuthenticated, (req, res) => {
                     console.error(err.message);
                 } else {
                     req.session.gkey = row ? row.gkey : undefined;
-                    
+
                     if (req.session.user == 'Chris' || req.session.user == 'Truit Elwell' || req.session.user == 'Kayden' || req.session.user == 'Dylan Anderson') {
                         managers[req.session.user] = req.session.gkey;
                         console.log(`Manager ${req.session.user} loaded index.`);
@@ -357,6 +357,10 @@ app.get('/wordle', isAuthenticated, (req, res) => {
         specifics: `<details>
         <summary class="summaries">Specifics</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+            <h3>Keybinds:</h3>  
+                <li class="innerli">[ Backspace ] 'Backspace' - Delete the last entered letter</li> 
+                <li class="innerli">[ Enter ] 'Enter' - Submit the current guess</li>
+                <li class="innerli">[ Tab ] 'Tab' - Skip to next letterbox</li>
                 <h3>Wordified Logic:</h3>
                 <li class="innerli">Game starts, form area drawn</li>
                 <li class="innerli">Server retrieves dictionary, and sends a random 5 letter word from it to the client</li>
@@ -437,6 +441,11 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
         changelog: `<details>
         <summary class="summaries">Changelog</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.1 - First Update - 9/10/2026</div>
+        <li class="innerli">Added same-number highlighting to numbers placed on the grid</li>
+        <li class="innerli">Added keybinds for Number/Draft mode</li>
+        <li class="innerli">Added hover animations for Number/Draft buttons</li>
+        <li class="innerli">Fixed infinite lives bug</li>
         <div class="changelog-header">v1.0.0 - Sudoku Released - 9/01/2026</div>
         <li class="innerli">Initial release of Sudoku on Gamebar</li>
         </details>`,
@@ -447,6 +456,10 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
         specifics: `<details>
         <summary class="summaries">Specifics</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Keybinds:</h3>  
+                <li class="innerli">[ Backspace ] 'Backspace' / [0] '0' - Delete the last entered number</li>
+                <li class="innerli">[N] 'n' / [Z] 'z' / [Q] 'q' / [-] '-' - Number Mode</li>
+                <li class="innerli">[D] 'd' / [X] 'x' / [E] 'e' / [+] '=' - Draft Mode</li>
                 <h3>Wordified Logic:</h3>
                 <li class="innerli">Player loads the page and a new instance of a Game is created</li>
                 <li class="innerli">Upon creation of a Game class, it randomly fills a grid with numbers and makes sure they follow the rules of Sudoku</li>
@@ -532,7 +545,7 @@ app.get('/game_sudoku', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/sudoku/game_sudoku', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.0' });
+        res.render('games/sudoku/game_sudoku', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.1' });
     }
 });
 
