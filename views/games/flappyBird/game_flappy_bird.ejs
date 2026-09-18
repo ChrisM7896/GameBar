@@ -20,7 +20,7 @@
                 height: 800px;
                 width: 1200px;
                 position: absolute;
-                top: 53%;
+                top: 54%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 outline: 6px solid #000;
@@ -86,7 +86,7 @@
                     const topPipeY = this.y - PIPE_HEIGHT + PIPE_OFFSET_Y;
                     const bottomPipeY = this.y + PIPE_GAP;
 
-                    if (!gameover && showHitboxes) {
+                    if (!gameover && enabledHitboxes) {
                         ctx.lineWidth = 2;
                         ctx.strokeStyle = '#FF0000';
                         ctx.strokeRect(birdX + BIRD_OFFSET_X, birdY + BIRD_OFFSET_Y, BIRD_WIDTH, BIRD_HEIGHT);
@@ -99,15 +99,15 @@
 
                     if (birdX + BIRD_OFFSET_X + BIRD_WIDTH > this.x + PIPE_OFFSET_X && birdX + BIRD_OFFSET_X < this.x + PIPE_OFFSET_X + PIPE_WIDTH) {
                         if (birdY + BIRD_OFFSET_Y < topPipeY + PIPE_HEIGHT && birdY + BIRD_OFFSET_Y + BIRD_HEIGHT > topPipeY) {
-                            return true;
+                            if (!noclip) return true; else return false;
                         }
                         if (birdY + BIRD_OFFSET_Y < bottomPipeY + PIPE_HEIGHT && birdY + BIRD_OFFSET_Y + BIRD_HEIGHT > bottomPipeY) {
-                            return true;
+                            if (!noclip) return true; else return false;
                         }
                     }
 
-                    if (birdY >= canvas.height - 84) return true;
-                    if (birdY < 0) return true;
+                    if (birdY >= canvas.height - 84) if (!noclip) return true; else return false;
+                    if (birdY < 0) if (!noclip) return true; else return false;
 
                     return false;
                 }
@@ -241,27 +241,32 @@
                 }
             });
 
-            let showHitboxes = false;
+            let devMode = false;
             const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Enter'];
             let konamiIndex = 0;
-            let enabledhitboxes;
+            let enabledHitboxes = false;
+            let noclip = false;
             document.addEventListener('keydown', function (event) {
                 if (event.code === konamiCode[konamiIndex]) {
                     konamiIndex++;
                     if (konamiIndex === konamiCode.length) {
-                        showHitboxes = !showHitboxes;
+                        devMode = true;
                         konamiIndex = 0;
-                        enabledhitboxes = true;
                     }
                 } else {
                     konamiIndex = 0;
                 }
             });
             document.addEventListener('keydown', function (event) {
-                if (event.ctrlKey && event.shiftKey && event.code === 'KeyH') {
-                    if (enabledhitboxes) {
-                        showHitboxes = !showHitboxes;
+                if (event.code === 'KeyH') {
+                    if (devMode) {
+                        enabledHitboxes = !enabledHitboxes;
                     }
+                } else if (event.code === 'KeyN') {
+                    if (devMode) {
+                        noclip = !noclip;
+                    }
+
                 }
             });
         </script>
