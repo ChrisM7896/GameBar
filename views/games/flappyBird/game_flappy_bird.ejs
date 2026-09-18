@@ -1,0 +1,269 @@
+<%- include('../../partials/header') %>
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/flappyBird/logoFlappyBird.png';
+        document.head.appendChild(link);
+    </script>
+    <title>Flappy Bird</title>
+    </head>
+    <%- include('../../partials/gameSessions') %>
+
+        <style>
+            #partials-header-version {
+                right: 820px;
+                top: 29px;
+            }
+
+            #gameCanvas {
+                height: 800px;
+                width: 1200px;
+                position: absolute;
+                top: 53%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                outline: 6px solid #000;
+                box-shadow: 0 0 0 12px #4d664d;
+            }
+        </style>
+
+        <body>
+            <canvas id="gameCanvas" width="1200" height="800"></canvas>
+        </body>
+        <script>
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = "#172222";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = "100px Arial";
+            ctx.letterSpacing = "+3px";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#000000";
+            ctx.strokeText("Press Space to Start", canvas.width / 2, canvas.height / 2);
+            ctx.fillStyle = "#4d664d";
+            ctx.fillText("Press Space to Start", canvas.width / 2, canvas.height / 2);
+
+            class Pipe {
+                constructor(x, y) {
+                    this.y = y
+                    this.x = x
+                    this.pipe_top = new Image();
+                    this.pipe_top.src = '/flappyBird/pipe_top.png';
+                    this.pipe_bottom = new Image();
+                    this.pipe_bottom.src = '/flappyBird/pipe_bottom.png';
+                    pipes.push(this)
+                }
+
+                update() {
+                    if (this.x < -196) {
+                        this.x = canvas.width;
+                        this.y = Math.floor(Math.random() * 423)
+                    }
+                    this.x -= 5;
+                }
+
+                draw() {
+                    ctx.drawImage(this.pipe_top, this.x, this.y - 1323);
+                    ctx.drawImage(this.pipe_bottom, this.x, this.y + 300);
+                }
+
+                birdCollision(birdX, birdY) {
+                    const BIRD_WIDTH = 119 - 60;
+                    const BIRD_HEIGHT = 84 - 20;
+                    const BIRD_OFFSET_X = 30;
+                    const BIRD_OFFSET_Y = 10;
+                    const PIPE_WIDTH = 196;
+                    const PIPE_GAP = 300;
+                    const PIPE_HEIGHT = 1323;
+                    const PIPE_OFFSET_X = 0;
+                    const PIPE_OFFSET_Y = 77;
+
+                    const topPipeY = this.y - PIPE_HEIGHT + PIPE_OFFSET_Y;
+                    const bottomPipeY = this.y + PIPE_GAP;
+
+                    if (!gameover && showHitboxes) {
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#FF0000';
+                        ctx.strokeRect(birdX + BIRD_OFFSET_X, birdY + BIRD_OFFSET_Y, BIRD_WIDTH, BIRD_HEIGHT);
+
+                        ctx.strokeStyle = '#0000FF';
+                        ctx.strokeRect(this.x + PIPE_OFFSET_X, topPipeY, PIPE_WIDTH, PIPE_HEIGHT);
+                        ctx.strokeRect(this.x + PIPE_OFFSET_X, bottomPipeY, PIPE_WIDTH, PIPE_HEIGHT);
+                    }
+
+
+                    if (birdX + BIRD_OFFSET_X + BIRD_WIDTH > this.x + PIPE_OFFSET_X && birdX + BIRD_OFFSET_X < this.x + PIPE_OFFSET_X + PIPE_WIDTH) {
+                        if (birdY + BIRD_OFFSET_Y < topPipeY + PIPE_HEIGHT && birdY + BIRD_OFFSET_Y + BIRD_HEIGHT > topPipeY) {
+                            return true;
+                        }
+                        if (birdY + BIRD_OFFSET_Y < bottomPipeY + PIPE_HEIGHT && birdY + BIRD_OFFSET_Y + BIRD_HEIGHT > bottomPipeY) {
+                            return true;
+                        }
+                    }
+
+                    if (birdY >= canvas.height - 84) return true;
+                    if (birdY < 0) return true;
+
+                    return false;
+                }
+            }
+            let pipes = []
+
+            let birdX = 100;
+            let birdY = 300;
+            let yVelocity = 0;
+            let birdImg = new Image();
+            birdImg.src = '/flappyBird/bird.png';
+            function bird() {
+                if (!gameover) {
+                    yVelocity += 0.5;
+                    birdY += yVelocity;
+                    if (birdY > canvas.height - 84) {
+                        birdY = canvas.height - 84;
+                        yVelocity = 0;
+                    }
+
+                    ctx.save();
+
+                    ctx.translate(birdX + 60, birdY + 42);
+                    const rotation = Math.max(-0.5, Math.min(0.5, yVelocity * 0.05))
+                    ctx.rotate(rotation);
+                    ctx.translate(-(birdX + 60), -(birdY + 42));
+                    ctx.drawImage(birdImg, birdX, birdY);
+
+                    ctx.restore();
+                }
+            }
+
+
+            function jump() {
+                yVelocity = -10;
+            }
+
+            new Pipe(((canvas.width + 196) / 3) + 300, Math.floor(Math.random() * 423));
+            new Pipe(((canvas.width + 196) * 2 / 3) + 300, Math.floor(Math.random() * 423));
+            new Pipe(((canvas.width + 196)) + 300, Math.floor(Math.random() * 423));
+
+            const bgImage = new Image();
+            bgImage.src = '/flappyBird/background.png';
+
+            let score = 0;
+            function updateScore() {
+                pipes.forEach(p => {
+                    if (birdX > p.x + 196 && !p.scored) {
+                        score++;
+                        p.scored = true;
+                    }
+                    if (birdX < p.x + 196) {
+                        p.scored = false;
+                    }
+                });
+            }
+            function drawScore() {
+                if (!gameover) {
+                    ctx.font = "30px Arial";
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "top";
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#000000";
+                    ctx.strokeText(`Score: ${score}`, 10, 10);
+                    ctx.fillStyle = "#4d664d";
+                    ctx.fillText(`Score: ${score}`, 10, 10);
+                }
+                if (gameover) {
+                    ctx.font = "50px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = "#000000";
+                    ctx.strokeText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 100);
+                    ctx.fillStyle = "#4d664d";
+                    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 100);
+                }
+            }
+
+            let gameover = false;
+            function gameLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#172222";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const scrollOffset = (Date.now() / 7) % canvas.width;
+                ctx.drawImage(bgImage, -scrollOffset, 0, canvas.width, canvas.height);
+                ctx.drawImage(bgImage, canvas.width - scrollOffset, 0, canvas.width, canvas.height);
+
+                pipes.forEach(p => p.update());
+                pipes.forEach(p => p.draw());
+                bird();
+                pipes.forEach(p => {
+                    if (p.birdCollision(birdX, birdY)) {
+                        ctx.fillStyle = "#172222";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.font = "100px Arial";
+                        ctx.letterSpacing = "+3px";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.lineWidth = 10;
+                        ctx.strokeStyle = "#000000";
+                        ctx.strokeText("Game Over", canvas.width / 2, canvas.height / 2);
+                        ctx.fillStyle = "#4d664d";
+                        ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+                        gameover = true;
+                    }
+                });
+                updateScore();
+                drawScore();
+                if (!gameover) {
+                    requestAnimationFrame(gameLoop);
+                };
+            }
+
+            document.addEventListener('keydown', function start(event) {
+                if (event.code === 'Space') {
+                    gameLoop();
+                    document.removeEventListener('keydown', start);
+                }
+            });
+
+            document.addEventListener('keydown', function jumpHandler(event) {
+                if (event.code === 'Space' || event.code === 'ArrowUp' || event.code === 'KeyW' && !gameover) {
+                    jump();
+                }
+            });
+            document.addEventListener('mousedown', function jumpHandler(event) {
+                if (!gameover) {
+                    jump();
+                }
+            });
+
+            let showHitboxes = false;
+            const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Enter'];
+            let konamiIndex = 0;
+            let enabledhitboxes;
+            document.addEventListener('keydown', function (event) {
+                if (event.code === konamiCode[konamiIndex]) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        showHitboxes = !showHitboxes;
+                        konamiIndex = 0;
+                        enabledhitboxes = true;
+                    }
+                } else {
+                    konamiIndex = 0;
+                }
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.ctrlKey && event.shiftKey && event.code === 'KeyH') {
+                    if (enabledhitboxes) {
+                        showHitboxes = !showHitboxes;
+                    }
+                }
+            });
+        </script>
+
+        </html>
