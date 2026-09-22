@@ -11,6 +11,8 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const http = require('http');
 const datamuse = require('datamuse');
 const { on } = require('cluster');
+const { spawn } = require('child_process');
+const { read } = require('fs');
 
 // DATABASE SETUP
 const db = new sqlite3.Database('./db/app.db', (err) => {
@@ -27,7 +29,9 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || `http://YOUR_IP:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
-const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
+const GITHUB_WEBHOOK_ENABLED = process.env.GITHUB_WEBHOOK_ENABLED || false
+const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
+const WEBHOOK_SCRIPT_PATH = process.env.WEBHOOK_SCRIPT_PATH || './'
 
 // MIDDLEWARE
 app.set('view engine', 'ejs');
@@ -68,6 +72,36 @@ let paid = false;
 
 // ROUTES
 let managers = {};
+
+let readyForUpdate = false
+
+function pullAndUpdate() {
+    if (!GITHUB_WEBHOOK_ENABLED) return
+
+    spawn(WEBHOOK_SCRIPT_PATH, [], {
+        detached: true,
+        stdio: 'ignore'
+    }).unref()
+}
+
+/*
+ :::::::: ::::::::::: ::::::::::: :::    ::: :::    ::: :::::::::
+:+:    :+:    :+:         :+:     :+:    :+: :+:    :+: :+:    :+:
++:+           +:+         +:+     +:+    +:+ +:+    +:+ +:+    +:+
+:#:           +#+         +#+     +#++:++#++ +#+    +:+ +#++:++#+
++#+   +#+#    +#+         +#+     +#+    +#+ +#+    +#+ +#+    +#+
+#+#    #+#    #+#         #+#     #+#    #+# #+#    #+# #+#    #+#
+ ######## ###########     ###     ###    ###  ########  #########
+*/
+
+if (GITHUB_WEBHOOK_ENABLED) {
+    app.post('/api/webhook', (req, res) => {
+        res.sendStatus(200) // Tell github the request was received
+
+        if (req.body.ref != 'refs/heads/main') return // Only update for main branch
+        readyForUpdate = true
+    })
+}
 
 app.get('/login', (req, res) => {
     if (req.query.token) {
@@ -141,7 +175,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8' });
+                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0' });
                 }
             });
         }
@@ -151,7 +185,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8' });
+    res.render('changes', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -209,7 +243,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -248,7 +282,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 }
 );
 
@@ -285,7 +319,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -332,7 +366,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -371,7 +405,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
@@ -400,7 +434,7 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/solitaire', isAuthenticated, (req, res) => {
@@ -431,7 +465,7 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
 app.get('/sudoku', isAuthenticated, (req, res) => {
@@ -474,7 +508,73 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.8', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+});
+
+
+app.get('/minesweeper', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic computer game, this singleplayer game challenges the player's logic and problem solving skills, as they try to clear a minefield without detonating any mines. <br><br> This project is the ninth completed Gamebar game, and the second one completed by Truit!`,
+        developer: 'Truit Elwell',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Mineswweeper Released - 9/18/2026</div>
+        <li class="innerli">Initial release of Minesweeper on Gamebar</li>
+        </details>`,
+        game: 'Minesweeper',
+        preview: `<img id="previewImg" src="/minesweeper/minesweeperpreview.png" alt="Minesweeper Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Click on any tile to start the game. If you click on a mine, you lose. However, if you click on a safe tile, it will reveal a number indicating how many mines are adjacent to that tile. Use logic and deduction to figure out where the mines are and clear the board without detonating any mines!<br><br>You can right click to flag a tile as a mine, and left click to reveal a tile. Good luck!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">     
+        <h3>Keybinds:</h3>
+                <li class="innerli">[LMB] 'click' - Reveal a tile</li> 
+                <li class="innerli">[RMB] 'contextmenu' - Flag a tile as a mine</li>
+                <li class="innerli">[LMB] 'click' + [RMB] 'contextmenu' - Break all adjacent tiles, if # of flags is equal to the number of adjacent mines</li>          
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">The player clicks anywhere on the grid to generate the puzzle. the puzzle is generated with a 9x9 square around the mouse
+                <li class="innerli">Click a space breaks it and all of its neighbors, unless the space has adjacent mines
+                <li class="innerli">Safe spaces adjacent to mines display how many mines are in proximity to it
+                <li class="innerli">If you click a mine, you lose. Otherwise, game continues until all safe spaces are revealed, at which point you win.
+                </li>
+                </details>
+                </details>`
+    };
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+});
+
+app.get('/flappyBird', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic mobile game that was removed from the app store, this singleplayer game challenges a player's reaction time and timing skills, as they attempt to navigate a bird through pipes without running into them. <br><br> This is the 10th completed Gamebar game and the second game completed by Dylan`,
+        developer: 'Dylan Anderson',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Flappy Bird Released - 9/18/2026</div>
+        <li class="innerli">Initial release of Flappy Bird on Gamebar</li>
+        </details>`,
+        game: 'Flappy Bird',
+        preview: `<img id="previewImg" src="/flappyBird/flappybirdpreview.png" alt="Flappy Bird Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Press the spacebar to make the bird flap its wings and fly upwards. Navigate through the pipes without hitting them or the ground. The longer you survive, the higher your score!<br><br>Good luck!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Keybinds:</h3>
+                <li class="innerli">[Space] 'Space' / [▲] 'ArrowUp' / [W] 'w' - Jump</li>
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Game waits for a spacebar press before starting</li>
+                <li class="innerli">That triggers the game loop to begin, canvas is drawn and redrawn every frame</li>
+                <li class="innerli">The pipes are spawned, using a class (thanks to Truit), with a randomized vertical position, and the same 3 are recycled</li>
+                <li class="innerli">The bird is drawn, pressing space increases the yvelocity, and the rotation of it is based off of the yvelocity</li>
+                <li class="innerli">The score increases by 1 after each pipe is passed</li>
+                <li class="innerli">If the bird's hitbox touches the pipe's hitbox or the top or bottom of the canvas the game ends</li>
+                </details>
+        </details>`
+    };
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.0.0', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -482,7 +582,7 @@ app.get('/game_2048', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/2048/game_2048', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: '2048', version: 'v1.0.4' });
+        res.render('games/2048/game_2048', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: '2048', version: 'v1.0.4' });
     }
 });
 
@@ -491,7 +591,7 @@ app.get('/game_snake', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/snake/game_snake', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Snake', version: 'v1.0.2' });
+        res.render('games/snake/game_snake', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Snake', version: 'v1.0.2' });
     }
 });
 
@@ -500,7 +600,7 @@ app.get('/game_stack', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/stack/game_stack', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Stack', version: 'v1.0.1' });
+        res.render('games/stack/game_stack', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Stack', version: 'v1.0.1' });
     }
 });
 
@@ -509,7 +609,7 @@ app.get('/game_alchemy', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/alchemy/game_alchemy', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Alchemy', version: 'v1.2.2' });
+        res.render('games/alchemy/game_alchemy', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Alchemy', version: 'v1.2.2' });
     }
 });
 
@@ -518,7 +618,7 @@ app.get('/game_wordle', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/wordle/game_wordle', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Wordle', version: 'v1.0.2' });
+        res.render('games/wordle/game_wordle', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Wordle', version: 'v1.0.2' });
     }
 });
 
@@ -527,7 +627,7 @@ app.get('/game_fruit_crush', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/fruitCrush/game_fruit_crush', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Fruit Crush', version: 'v1.0.0' });
+        res.render('games/fruitCrush/game_fruit_crush', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Fruit Crush', version: 'v1.0.0' });
     }
 });
 
@@ -536,7 +636,7 @@ app.get('/game_solitaire', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/solitaire/game_solitaire', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.1' });
+        res.render('games/solitaire/game_solitaire', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Solitaire', version: 'v1.0.1' });
     }
 });
 
@@ -545,7 +645,25 @@ app.get('/game_sudoku', isAuthenticated, (req, res) => {
         // if the user hasn't paid, send user back to home page
         res.redirect('/');
     } else {
-        res.render('games/sudoku/game_sudoku', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.1' });
+        res.render('games/sudoku/game_sudoku', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.1' });
+    }
+});
+
+app.get('/game_minesweeper', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/minesweeper/game_minesweeper', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Minesweeper', version: 'v1.0.0' });
+    }
+});
+
+app.get('/game_flappy_bird', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/flappyBird/game_flappy_bird', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Flappy Bird', version: 'v1.0.0' });
     }
 });
 
@@ -615,19 +733,29 @@ io.on('connection', (socket) => {
         }, 1000);
     });
 
+    // Github update thing
+    socket.on('update', (user, gkey) => {
+        if (!readyForUpdate || !GITHUB_WEBHOOK_ENABLED || managers[user] != gkey) return
+        console.log('RUNNING UPDATE SCRIPT')
+
+        pullAndUpdate()
+    })
+
     socket.on('getPurchaseVal', (button) => {
         socket.emit('purchaseValReturn', gpPurchaseValues[button]);
     });
     socket.on('playGame', (data) => {
         prices = {
-            '2048': 100,
-            'Snake': 70,
-            'Stack': 40,
-            'Alchemy': 1200,
+            '2048': 150,
+            'Snake': 125,
+            'Stack': 65,
+            'Alchemy': 1500,
             'Wordle': 50,
             'Fruit Crush': 100,
-            'Solitaire': 115,
-            'Sudoku': 85,
+            'Solitaire': 200,
+            'Sudoku': 100,
+            'Minesweeper': 100,
+            'Flappy Bird': 75,
         };
 
         let user = data.user;

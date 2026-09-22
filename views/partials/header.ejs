@@ -239,6 +239,18 @@
             color: #4d664d;
         }
 
+        #updateButton {
+            display: block;
+            margin: 0 auto;
+            margin-top: 20px;
+            padding: 5px 10px;
+            background-color: rgb(23, 34, 34);
+            border: solid 1px #4d664d;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #4d664d;
+        }
+
         #managerPanelDisplayDiv {
             text-align: center;
             margin-top: 15px;
@@ -314,7 +326,9 @@
 
         <div onclick="managerPanel('open')" id="partials-header-manager-panel">
             <img src="/index/gear.png" id="partials-header-panel-button">
-            <h3 id="partials-header-manager-label">Manager Panel</h3>
+            <h3 id="partials-header-manager-label" <% if (readyForUpdate) { %> style='color: red !important;' <% } %>
+                    >Manager Panel <% if (readyForUpdate) { %> ⚠️ <% } %>
+            </h3>
         </div>
 
         <div onclick="gamePointsShop('open')" id="partials-header-gamepoints-station">
@@ -375,7 +389,13 @@
             </form>
         </div>
 
-        <button id="closeManagerWindow" onclick="managerPanel('close')">Close</button>
+        <% if (readyForUpdate) { %>
+            <p style="color: red;">GAMEBARs IS READY TO UPDATE. CLICK TO UPDATE:</p>
+            <button id="updateButton"
+                onclick="socket.emit('update', '<%= user %>', '<%= gkey %>'); window.location.href = '/'">UPDATE</button>
+            <% } %>
+
+                <button id="closeManagerWindow" onclick="managerPanel('close')">Close</button>
     </div>
 
 </body>
@@ -473,7 +493,7 @@
         "I am Steve", // A Minecraft Movie
         "Please do not the cat",
         "Houston, we have a problem",
-        "We own the finish line", 
+        "We own the finish line",
         "I prefer Kanye",
         "Mama mia that's a spicy meatball",
         "Also try Geometry Dash!",

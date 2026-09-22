@@ -1,0 +1,40 @@
+<%- include('../../partials/header') %>
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/minesweeper/logoMinesweeper.png';
+        document.head.appendChild(link);
+    </script>
+
+    <head>
+        <title>Minesweeper</title>
+
+        <style>
+            #body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            #partials-header-version {
+                right: 810px;
+                top: 29px;
+            }
+        </style>
+    </head>
+    <%- include('../../partials/gameSessions') %>
+
+        <div id="body">
+
+            <body>
+                <canvas id="canvas"></canvas>
+            </body>
+        </div>
+
+
+        <script src="/minesweeper/main.js" type="module"></script>
+
+        </html>
