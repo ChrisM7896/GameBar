@@ -11,6 +11,8 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const http = require('http');
 const datamuse = require('datamuse');
 const { on } = require('cluster');
+const { spawn } = require('child_process');
+const { read } = require('fs');
 
 // DATABASE SETUP
 const db = new sqlite3.Database('./db/app.db', (err) => {
@@ -27,7 +29,9 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'your_secret_key';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || `http://YOUR_IP:${PORT}`;
 const API_KEY = process.env.API_KEY || 'your_api_key';
-const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
+const GITHUB_WEBHOOK_ENABLED = process.env.GITHUB_WEBHOOK_ENABLED || false
+const GITHUB_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || 'your_webhook_secret';
+const WEBHOOK_SCRIPT_PATH = process.env.WEBHOOK_SCRIPT_PATH || './'
 
 // MIDDLEWARE
 app.set('view engine', 'ejs');
@@ -68,6 +72,36 @@ let paid = false;
 
 // ROUTES
 let managers = {};
+
+let readyForUpdate = false
+
+function pullAndUpdate() {
+    if (!GITHUB_WEBHOOK_ENABLED) return
+
+    spawn(WEBHOOK_SCRIPT_PATH, [], {
+        detached: true,
+        stdio: 'ignore'
+    }).unref()
+}
+
+/*
+ :::::::: ::::::::::: ::::::::::: :::    ::: :::    ::: :::::::::
+:+:    :+:    :+:         :+:     :+:    :+: :+:    :+: :+:    :+:
++:+           +:+         +:+     +:+    +:+ +:+    +:+ +:+    +:+
+:#:           +#+         +#+     +#++:++#++ +#+    +:+ +#++:++#+
++#+   +#+#    +#+         +#+     +#+    +#+ +#+    +#+ +#+    +#+
+#+#    #+#    #+#         #+#     #+#    #+# #+#    #+# #+#    #+#
+ ######## ###########     ###     ###    ###  ########  #########
+*/
+
+if (GITHUB_WEBHOOK_ENABLED) {
+    app.post('/api/webhook', (req, res) => {
+        res.sendStatus(200) // Tell github the request was received
+
+        if (req.body.ref != 'refs/heads/main') return // Only update for main branch
+        readyForUpdate = true
+    })
+}
 
 app.get('/login', (req, res) => {
     if (req.query.token) {
@@ -141,7 +175,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.9' });
+                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.9' });
                 }
             });
         }
@@ -507,7 +541,7 @@ app.get('/minesweeper', isAuthenticated, (req, res) => {
                 </li>
                 </details>
                 </details>`
-            };
+    };
     res.render('page', { user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.1.9', data: data });
 });
 
@@ -698,6 +732,14 @@ io.on('connection', (socket) => {
             }
         }, 1000);
     });
+
+    // Github update thing
+    socket.on('update', () => {
+        if (!readyForUpdate || !GITHUB_WEBHOOK_ENABLED) return
+        console.log('RUNNING UPDATE SCRIPT')
+
+        pullAndUpdate()
+    })
 
     socket.on('getPurchaseVal', (button) => {
         socket.emit('purchaseValReturn', gpPurchaseValues[button]);
