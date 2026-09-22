@@ -2,12 +2,12 @@ import Level from "./level.js";
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-export const cellSize = 30;
+canvas.height = window.innerHeight * .75;
+export const cellSize = 25;
 const level = new Level(25, 25, 20.83); //! Level
 window.addEventListener('resize', (e) => {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = window.innerHeight * .75;
 });
 const Mouse = { x: 0, y: 0, gx: 0, gy: 0, leftDown: false, rightDown: false };
 export let flags = [];
@@ -97,7 +97,7 @@ function shakeScreen() {
 }
 function main() {
     offsetX = (canvas.width / 2) - cellSize * (level.width / 2);
-    offsetY = (canvas.height / 2) - cellSize * (level.height / 2);
+    offsetY = (canvas.height / 2) - cellSize * (level.height / 2) + 10;
     if (tick % 1 == 0)
         shakeScreen();
     ctx.fillStyle = backgroundColor;
@@ -179,7 +179,7 @@ function main() {
     ctx.strokeRect(offsetX, offsetY, cellSize * level.width, cellSize * level.height);
     if (level.generated) {
         ctx.textBaseline = 'top';
-        ctx.font = 'bold 50px monospace';
+        ctx.font = 'bold 25px monospace';
         ctx.fillStyle = 'white';
         ctx.fillText(`🚩x${level.mines - flags.length}  ⏰${Math.floor(time / 60)}:${time % 60 < 10 ? `0${time % 60}` : time % 60}`, canvas.width / 2, 10);
         for (let chunk of chunks) {
