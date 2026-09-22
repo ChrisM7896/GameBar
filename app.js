@@ -734,8 +734,8 @@ io.on('connection', (socket) => {
     });
 
     // Github update thing
-    socket.on('update', () => {
-        if (!readyForUpdate || !GITHUB_WEBHOOK_ENABLED) return
+    socket.on('update', (user) => {
+        if (!readyForUpdate || !GITHUB_WEBHOOK_ENABLED || !managers.includes(user)) return
         console.log('RUNNING UPDATE SCRIPT')
 
         pullAndUpdate()
