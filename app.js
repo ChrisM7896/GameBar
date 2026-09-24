@@ -1,18 +1,21 @@
 // IMPORTS
-require('dotenv').config();
-const express = require('express');
+import 'dotenv/config'
+import express from 'express'
 const app = express();
-const jwt = require('jsonwebtoken');
-const session = require('express-session');
-const { Server } = require('socket.io');
-const ioClient = require('socket.io-client');
-const sqlite3 = require('sqlite3').verbose();
-const SQLiteStore = require('connect-sqlite3')(session);
-const http = require('http');
-const datamuse = require('datamuse');
-const { on } = require('cluster');
-const { spawn } = require('child_process');
-const { read } = require('fs');
+import jwt from 'jsonwebtoken'
+import session from 'express-session'
+import { Server } from 'socket.io';
+import ioClient from 'socket.io-client';
+import sqlite3Pkg from 'sqlite3'
+import sqlite3Store from 'connect-sqlite3';
+import http from 'http'
+import datamuse from 'datamuse'
+import { spawn } from 'child_process'
+
+const sqlite3 = sqlite3Pkg.verbose()
+const SQLiteStore = sqlite3Store(session)
+
+import Player from './multiplayer/battleship/player.js';
 
 // DATABASE SETUP
 const db = new sqlite3.Database('./db/app.db', (err) => {
@@ -139,7 +142,7 @@ app.get('/', isAuthenticated, (req, res) => {
             let gameKey = '';
             let letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-            for (i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++) {
                 const randInt = Math.floor(Math.random() * 62);
                 gameKey += letters[randInt];
             }
@@ -521,6 +524,48 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
     res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
 });
 
+app.get('/battleship', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic puzzle game, this singleplayer game challenges the player's logic and problem solving skills, as they try to fill in the 9x9 grid with numbers 1-9 without repeating any numbers in a row, column, or 3x3 subgrid. <br><br> This project is the eighth completed Gamebar game, and the first one completed by Truit, in only a few days!`,
+        developer: 'Truit Elwell',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.1 - First Update - 9/10/2026</div>
+        <li class="innerli">Added same-number highlighting to numbers placed on the grid</li>
+        <li class="innerli">Added keybinds for Number/Draft mode</li>
+        <li class="innerli">Added hover animations for Number/Draft buttons</li>
+        <li class="innerli">Fixed infinite lives bug</li>
+        <div class="changelog-header">v1.0.0 - Sudoku Released - 9/01/2026</div>
+        <li class="innerli">Initial release of Sudoku on Gamebar</li>
+        </details>`,
+        game: 'Battleship',
+        preview: `<img id="previewImg" src="/sudoku/sudokupreview.png" alt="Sudoku Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Try to fill in the 9x9 grid with numbers 1-9 without repeating any numbers in a row, column, or 3x3 subgrid. Use logic and deduction to figure out where each number goes. You can click the notes emoji to add placeholder numbers, or the numbers emoji to input the actual numbers.<br><br>You have 3 lives. Good luck!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Keybinds:</h3>  
+                <li class="innerli">[ Backspace ] 'Backspace' / [0] '0' - Delete the last entered number</li>
+                <li class="innerli">[N] 'n' / [Z] 'z' / [Q] 'q' / [-] '-' - Number Mode</li>
+                <li class="innerli">[D] 'd' / [X] 'x' / [E] 'e' / [+] '=' - Draft Mode</li>
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Player loads the page and a new instance of a Game is created</li>
+                <li class="innerli">Upon creation of a Game class, it randomly fills a grid with numbers and makes sure they follow the rules of Sudoku</li>
+                <li class="innerli">After the grid is generated, it is stored to the Game's solution property</li>
+                <li class="innerli">The solution is then taken and numbers are randomly removed according to the set difficulty</li>
+                <li class="innerli">This is stored to the Game's unsolved property</li>
+                <li class="innerli">There is another array called "currentGrid" that is set to the value of the unsolved puzzle</li>
+                <li class="innerli">When the player is in number mode and places a number somewhere in the grid, it compares the currentGrid to the game's solution</li>
+                <li class="innerli">If the number placed is not the same as the number in the same spot of the solution, the player loses a heart</li>
+                <li class="innerli">If the player is out of hearts, the screen clears and tells the player that they lost</li>
+                <li class="innerli">If the currentGrid matches the game's solved grid, the screen clears and tells the player that they won</li>
+                </details>
+        </details>`
+    };
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+});
 
 app.get('/minesweeper', isAuthenticated, (req, res) => {
     const data = {
@@ -682,6 +727,15 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
+app.get('/game_battleship', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/battleship/game_battleship', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Sudoku', version: 'v1.0.1' });
+    }
+});
+
 /*
  ::::::::   ::::::::   ::::::::  :::    ::: :::::::::: ::::::::::: ::::::::
 :+:    :+: :+:    :+: :+:    :+: :+:   :+:  :+:            :+:    :+:    :+:
@@ -691,6 +745,9 @@ app.get('/logout', (req, res) => {
 #+#    #+# #+#    #+# #+#    #+# #+#   #+#  #+#            #+#    #+#    #+#
  ########   ########   ########  ###    ### ##########     ###     ########
 */
+
+export let battleshipMatches = []
+let players = []
 
 var socketReturn = false;
 var responseMessage = '';
@@ -759,11 +816,38 @@ io.on('connection', (socket) => {
         pullAndUpdate()
     })
 
+    // BATTLESHIP
+    let activePlayer = new Player(socket, 0, socket.id)
+    socket.emit('get id')
+
+    socket.once('id', (id) => {
+
+        if (id) {
+            if (players.some(p => p.id === id)) {
+                activePlayer = players.find(p => p.id === id)
+                activePlayer.setSocket(socket)
+            }
+            else activePlayer.id = id; players.push(activePlayer)
+
+        } else {
+            let foo = 0
+            while (players.some(p => p.id === foo)) foo++
+            activePlayer.id = foo
+
+            players.push(activePlayer)
+        }
+
+        socket.emit('id', (activePlayer.id))
+
+        if (!activePlayer.match) activePlayer.joinMatch(Infinity)
+        else activePlayer.match.sendGameState()
+    })
+
     socket.on('getPurchaseVal', (button) => {
         socket.emit('purchaseValReturn', gpPurchaseValues[button]);
     });
     socket.on('playGame', (data) => {
-        prices = {
+        let prices = {
             '2048': 150,
             'Snake': 125,
             'Stack': 65,
@@ -774,6 +858,7 @@ io.on('connection', (socket) => {
             'Sudoku': 100,
             'Minesweeper': 100,
             'Flappy Bird': 75,
+            'Battleship': 1,
         };
 
         let user = data.user;
@@ -932,6 +1017,8 @@ io.on('connection', (socket) => {
 
     socket.on('adjustGP', (username, amount, type, sender, gkey) => {
         console.log(`User ${sender} is atempting to adjust GP for user ${username}.`);
+
+        let typeQuery
 
         if (managers[sender] && managers[sender] === gkey) {
             if (type === 'add') {

@@ -1,4 +1,4 @@
-import { battleshipMatches } from "../app.js"
+import { battleshipMatches } from "../../app.js"
 import Ship from './ship.js'
 
 export default class BattleshipMatch {
@@ -44,6 +44,8 @@ export default class BattleshipMatch {
 
     attack(player, x, y) {
         if (this.winner) return
+
+        if (player.misses.some(h => h.x == x & h.y == y)) return
 
         if (player.side != this.turn || this.players.length < 2 || this.turn == 'prep') return
 

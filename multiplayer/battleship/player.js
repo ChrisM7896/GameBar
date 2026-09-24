@@ -1,4 +1,4 @@
-import { battleshipMatches } from "../app.js"
+import { battleshipMatches } from "../../app.js"
 import BattleshipMatch from "./match.js"
 
 export default class Player {
@@ -20,7 +20,7 @@ export default class Player {
         if (foo) foo.join(this)
 
         else {
-            let m = new BattleshipMatchMatch(combo)
+            let m = new BattleshipMatch(combo)
             m.join(this)
         }
     }
