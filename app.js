@@ -175,7 +175,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0' });
+                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1' });
                 }
             });
         }
@@ -185,7 +185,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0' });
+    res.render('changes', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -243,7 +243,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -282,7 +282,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 }
 );
 
@@ -319,7 +319,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -334,7 +334,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <div class="changelog-header">v1.2.1 - Bug Fix - 4/27/2026</div>
                 <li class="innerli">Fixed one-time purchase not saving properly</li>
                 <li class="innerli">Fixed issue with Osama Bin Laden</li>
-                <div class="changelog-header">v1.2.0 - Game Saving - 4/08/2026</div>
+                <div class="changelog-header">v1.2.1 - Game Saving - 4/08/2026</div>
                 <li class="innerli">Implemented game saving functionality</li>
                 <div class="changelog-header">v1.1.1 - Small Update - 3/26/2026</div>
                 <li class="innerli">Added 34 new elements</li>
@@ -366,7 +366,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -405,7 +405,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
@@ -434,7 +434,7 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/solitaire', isAuthenticated, (req, res) => {
@@ -465,7 +465,7 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/sudoku', isAuthenticated, (req, res) => {
@@ -508,7 +508,7 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 
@@ -542,7 +542,7 @@ app.get('/minesweeper', isAuthenticated, (req, res) => {
                 </details>
                 </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.1', data: data });
 });
 
 app.get('/flappyBird', isAuthenticated, (req, res) => {
