@@ -9,6 +9,7 @@
     
     //remove storage item if the page is closed or reloaded
     window.addEventListener('unload', () => {
+        window.location.href = '/';
         sessionStorage.removeItem('gameOpen');
     });
 </script>
