@@ -175,7 +175,7 @@ app.get('/', isAuthenticated, (req, res) => {
                         console.log(`User ${req.session.user} loaded index.`);
                     }
 
-                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2' });
+                    res.render('index', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3' });
                 }
             });
         }
@@ -185,7 +185,7 @@ app.get('/', isAuthenticated, (req, res) => {
 });
 
 app.get('/changes', isAuthenticated, (req, res) => {
-    res.render('changes', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2' });
+    res.render('changes', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3' });
 });
 
 app.get('/2048', isAuthenticated, (req, res) => {
@@ -243,7 +243,7 @@ app.get('/2048', isAuthenticated, (req, res) => {
         </li>
         </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/snake', isAuthenticated, (req, res) => {
@@ -282,7 +282,7 @@ app.get('/snake', isAuthenticated, (req, res) => {
                 <li class="innerli">If the snake does not collide with itself or the border, and manages to fill the board, the player wins.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 }
 );
 
@@ -319,7 +319,7 @@ app.get('/stack', isAuthenticated, (req, res) => {
                 <li class="innerli">If the player clicks when the block is not aligned at all, the game ends and displays a message based on the player's score and perfect counter.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/alchemy', isAuthenticated, (req, res) => {
@@ -366,7 +366,7 @@ app.get('/alchemy', isAuthenticated, (req, res) => {
                 <li class="innerli">If dropped on the sidebar from the game area, delete the element. If dropped on the game area, move the element there.</li>
                 </details>`
     }
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/wordle', isAuthenticated, (req, res) => {
@@ -405,7 +405,7 @@ app.get('/wordle', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/fruitCrush', isAuthenticated, (req, res) => {
@@ -434,7 +434,7 @@ app.get('/fruitCrush', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/solitaire', isAuthenticated, (req, res) => {
@@ -465,7 +465,7 @@ app.get('/solitaire', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/sudoku', isAuthenticated, (req, res) => {
@@ -508,7 +508,7 @@ app.get('/sudoku', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 
@@ -542,7 +542,7 @@ app.get('/minesweeper', isAuthenticated, (req, res) => {
                 </details>
                 </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.2', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/flappyBird', isAuthenticated, (req, res) => {
@@ -563,7 +563,7 @@ app.get('/flappyBird', isAuthenticated, (req, res) => {
         <summary class="summaries">Specifics</summary>
         <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
                 <h3>Keybinds:</h3>
-                <li class="innerli">[Space] 'Space' / [▲] 'ArrowUp' / [W] 'w' - Jump</li>
+                <li class="innerli">[ ________ ] 'Space' / [▲] 'ArrowUp' / [W] 'w' - Jump</li>
                 <h3>Wordified Logic:</h3>
                 <li class="innerli">Game waits for a spacebar press before starting</li>
                 <li class="innerli">That triggers the game loop to begin, canvas is drawn and redrawn every frame</li>
@@ -574,7 +574,40 @@ app.get('/flappyBird', isAuthenticated, (req, res) => {
                 </details>
         </details>`
     };
-    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.0.0', data: data });
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
+});
+
+app.get('/atariBreakout', isAuthenticated, (req, res) => {
+    const data = {
+        description: `Based on the classic arcade game, this singleplayer game challenges a player's reaction time and timing skills, as they attempt to break all the bricks with a ball without letting it fall off the screen. <br><br> This is the 11th completed Gamebar game and the third game completed by Dylan Anderson.`,
+        developer: 'Dylan Anderson',
+        changelog: `<details>
+        <summary class="summaries">Changelog</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+        <div class="changelog-header">v1.0.0 - Atari Breakout Released - 10/20/2026</div>
+        <li class="innerli">Initial release of Atari Breakout on Gamebar</li>
+        </details>`,
+        game: 'Atari Breakout',
+        preview: `<img id="previewImg" src="/atariBreakout/ataribreakoutpreview.png" alt="Atari Breakout Preview" height="500">`,
+        playButton: `<button id="button" onclick="play()">Play</button>`,
+        guide: 'Use the left and right arrow keys or the A and D keys to move the paddle and bounce the ball towards the bricks. Break all the bricks to win! If the ball falls off the screen, you lose. Good luck!',
+        specifics: `<details>
+        <summary class="summaries">Specifics</summary>
+        <hr style="border: solid 1px #4d664d; margin-top: 5px; margin-bottom: 10px;">
+                <h3>Keybinds:</h3>
+                <li class="innerli">[ ________ ] 'Space' - Start Game</li>
+                <li class="innerli">[◄] 'ArrowLeft' / [A] 'a' - Move Left</li>
+                <li class="innerli">[►] 'ArrowRight' / [D] 'd' - Move Right</li>
+                <h3>Wordified Logic:</h3>
+                <li class="innerli">Game waits for a spacebar press before starting</li>
+                <li class="innerli">Once the game is started, the animation loop begins, and visual elements are drawn (paddle, bricks, balls, etc.), while also checking for collisions.</li>
+                <li class="innerli">If a ball touches a brick, it breaks and bounces back. If the ball touches the paddle, it bounces. If all balls fall off the screen, the game ends.</li>
+                <li class="innerli">There is also a chance that an upgrade drops when a brick breaks. If it touches the paddle, it takes effect.</li>
+                <li class="innerli">If all bricks are cleared, they reset. This can repeat infinitely until the player loses or the page is closed.</li>
+                </details>
+        </details>`
+    };
+    res.render('page', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Gamebar', version: 'v1.2.3', data: data });
 });
 
 app.get('/game_2048', isAuthenticated, (req, res) => {
@@ -664,6 +697,15 @@ app.get('/game_flappy_bird', isAuthenticated, (req, res) => {
         res.redirect('/');
     } else {
         res.render('games/flappyBird/game_flappy_bird', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Flappy Bird', version: 'v1.0.0' });
+    }
+});
+
+app.get('/game_atari_breakout', isAuthenticated, (req, res) => {
+    if (!paid) {
+        // if the user hasn't paid, send user back to home page
+        res.redirect('/');
+    } else {
+        res.render('games/atariBreakout/game_atari_breakout', { readyForUpdate: readyForUpdate, user: req.session.user, gp: req.session.gp, gkey: req.session.gkey, pageName: 'Atari Breakout', version: 'v1.0.0' });
     }
 });
 
@@ -757,6 +799,7 @@ io.on('connection', (socket) => {
             'Sudoku': 100,
             'Minesweeper': 100,
             'Flappy Bird': 75,
+            'Atari Breakout': 150,
         };
 
         let user = data.user;

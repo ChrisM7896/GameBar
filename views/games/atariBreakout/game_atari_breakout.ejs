@@ -1,0 +1,447 @@
+<%- include('../../partials/header') %>
+
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = '/atariBreakout/logoAtariBreakout.png';
+        document.head.appendChild(link);
+    </script>
+    <title>Atari Breakout</title>
+    <style>
+        #partials-header-version {
+            right: 800px;
+            top: 29px;
+        }
+
+        #body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            height: 750px;
+            width: 1000px;
+            position: absolute;
+            top: 54%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            outline: 6px solid #000;
+        }
+    </style>
+    </head>
+    <%- include('../../partials/gameSessions') %>
+
+        <body>
+            <div id="body">
+                <canvas id="gameCanvas" width="1000" height="750"></canvas>
+            </div>
+        </body>
+        <script>
+            // Initialize canvas
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Setup paddle
+            const avatar = { x: canvas.width / 2 - 68, y: canvas.height - 60, w: 136, h: 20 };
+            let left = false;
+            let right = false;
+            let speed = 6;
+
+            // Paddle movement and drawing
+            function paddle() {
+                if (left && !right) {
+                    avatar.x -= speed;
+                } else if (right && !left) {
+                    avatar.x += speed;
+                }
+                if (avatar.x < 0) {
+                    avatar.x = 0;
+                }
+                if (avatar.x + avatar.w > canvas.width) {
+                    avatar.x = canvas.width - avatar.w;
+                }
+                ctx.fillStyle = "#56babf";
+                ctx.fillRect(avatar.x, avatar.y, avatar.w, avatar.h);
+            }
+
+            // Bircks
+            let bricks = [];
+            let barriers = [];
+            class Brick {
+                constructor(x, y, w, h, index, barrier) {
+                    this.x = x;
+                    this.y = y;
+                    this.w = w;
+                    this.h = h;
+                    this.index = index;
+                    this.barrier = barrier;
+                    if (barrier == false) {
+                        bricks.push(this);
+                    } else {
+                        barriers.push(this);
+                    }
+                }
+
+                draw() {
+                    ctx.fillStyle = ["#b62424", "#b62424", "#8e5f1e", "#8e5f1e", "#4d664d", "#4d664d", "#babf56", "#babf56", "#bbbbbb"][this.index];
+                    ctx.fillRect(this.x, this.y, this.w, this.h);
+                }
+            }
+
+            // Brick constants
+            const brickRows = 8;
+            const brickCols = 14;
+            const brickWidth = 65;
+            const brickHeight = 25;
+            const brickSpacingX = brickWidth + 5;
+            const brickSpacingY = 34;
+            const totalBrickWidth = brickCols * brickSpacingX - 5;
+            const startX = (canvas.width - totalBrickWidth) / 2;
+
+            // Create bricks
+            function createBricks() {
+                for (let i = 0; i < brickRows; i++) {
+                    for (let j = 0; j < brickCols; j++) {
+                        new Brick(startX + j * brickSpacingX, i * brickSpacingY + 10, brickWidth, brickHeight, i, false);
+                    }
+                }
+            }
+            createBricks();
+
+            // Ball
+            class Ball {
+                constructor(x, y, r) {
+                    this.x = x;
+                    this.y = y;
+                    this.r = r;
+                    this.dx = 4;
+                    this.dy = -4;
+                }
+
+                end() {
+                    if (this.y - this.r > canvas.height) {
+                        balls.splice(balls.indexOf(this), 1);
+                    }
+                    if (balls.length < 1) {
+                        gameover = true;
+                        upgrades = [];
+                        ctx.fillStyle = "#1f1f1f";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = "#fff";
+                        ctx.font = "48px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+                    }
+                    if (bricks.length < 1) {
+                        setTimeout(() => {
+                            bricks = [];
+                            createBricks();
+                        }, 1000);
+                    }
+                }
+
+                direction() {
+                    let angle = Math.random() * Math.PI / 2 - Math.PI / 4; // Random angle between -45 and 45 degrees
+                    let speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+                    this.dx = speed * Math.sin(angle);
+                    this.dy = -Math.abs(speed * Math.cos(angle));
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fillStyle = "#ccc";
+                    ctx.fill();
+                    ctx.closePath();
+                }
+
+                move() {
+                    this.x += this.dx;
+                    this.y += this.dy;
+
+                    // Collision with walls
+                    if (this.x + this.r > canvas.width) {
+                        this.x = canvas.width - this.r;
+                        this.dx *= -1;
+                    }
+                    if (this.x - this.r < 0) {
+                        this.x = this.r;
+                        this.dx *= -1;
+                    }
+                    if (this.y - this.r < 0) {
+                        this.y = this.r;
+                        this.dy *= -1;
+                    }
+
+                    // Collision with paddle
+                    if (this.y + this.r > avatar.y && this.y - this.r < avatar.y + avatar.h && this.x > avatar.x && this.x < avatar.x + avatar.w) {
+                        // Determine collision side
+                        let overlapLeft = (this.x + this.r) - avatar.x;
+                        let overlapRight = (avatar.x + avatar.w) - (this.x - this.r);
+                        let overlapTop = (this.y + this.r) - avatar.y;
+                        let overlapBottom = (avatar.y + avatar.h) - (this.y - this.r);
+
+                        let minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+                        if (minOverlap === overlapTop && this.dy > 0) {
+                            this.y = avatar.y - this.r;
+                            let hitPoint = (this.x - (avatar.x + avatar.w / 2)) / (avatar.w / 2);
+                            let angle = hitPoint * Math.PI / 3;
+                            let ballSpeed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+                            this.dx = ballSpeed * Math.sin(angle);
+                            this.dy = -Math.abs(ballSpeed * Math.cos(angle));
+                        } else if (minOverlap === overlapBottom) {
+                            this.dy *= -1;
+                            this.y = avatar.y + avatar.h + this.r;
+                        } else {
+                            this.dx *= -1;
+                            if (minOverlap === overlapLeft) {
+                                this.x = avatar.x - this.r;
+                            } else {
+                                this.x = avatar.x + avatar.w + this.r;
+                            }
+                        }
+                    }
+
+
+                    // Collision with bricks
+                    for (let i = 0; i < bricks.length; i++) {
+                        let brick = bricks[i];
+                        // Check if ball overlaps with brick
+                        if (this.x + this.r > brick.x && this.x - this.r < brick.x + brick.w &&
+                            this.y + this.r > brick.y && this.y - this.r < brick.y + brick.h) {
+
+                            // Determine collision side
+                            let overlapLeft = (this.x + this.r) - brick.x;
+                            let overlapRight = (brick.x + brick.w) - (this.x - this.r);
+                            let overlapTop = (this.y + this.r) - brick.y;
+                            let overlapBottom = (brick.y + brick.h) - (this.y - this.r);
+
+                            let minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+                            if (minOverlap === overlapTop || minOverlap === overlapBottom) {
+                                this.dy *= -1;
+                                if (minOverlap === overlapTop) {
+                                    this.y = brick.y - this.r;
+                                } else {
+                                    this.y = brick.y + brick.h + this.r;
+                                }
+                            } else {
+                                this.dx *= -1;
+                                if (minOverlap === overlapLeft) {
+                                    this.x = brick.x - this.r;
+                                } else {
+                                    this.x = brick.x + brick.w + this.r;
+                                }
+                            }
+                            bricks.splice(i, 1);
+                            if (active == false && upgrades.length == 0 && Math.random() < 1) {
+                                const type = Math.floor(Math.random() * 4);
+                                new Upgrade(brick.x + brick.w / 2 - 10, brick.y + brick.h / 2 - 10, 20, 20, type);
+                            }
+                            i--;
+                        }
+                    }
+
+                    // Collision with barriers
+                    for (let i = 0; i < barriers.length; i++) {
+                        let brick = barriers[i];
+                        // Check if ball overlaps with barrier
+                        if (this.x + this.r > brick.x && this.x - this.r < brick.x + brick.w &&
+                            this.y + this.r > brick.y && this.y - this.r < brick.y + brick.h) {
+
+                            // Determine collision side
+                            let overlapLeft = (this.x + this.r) - brick.x;
+                            let overlapRight = (brick.x + brick.w) - (this.x - this.r);
+                            let overlapTop = (this.y + this.r) - brick.y;
+                            let overlapBottom = (brick.y + brick.h) - (this.y - this.r);
+
+                            let minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+                            if (minOverlap === overlapTop || minOverlap === overlapBottom) {
+                                this.dy *= -1;
+                                if (minOverlap === overlapTop) {
+                                    this.y = brick.y - this.r;
+                                } else {
+                                    this.y = brick.y + brick.h + this.r;
+                                }
+                            } else {
+                                this.dx *= -1;
+                                if (minOverlap === overlapLeft) {
+                                    this.x = brick.x - this.r;
+                                } else {
+                                    this.x = brick.x + brick.w + this.r;
+                                }
+                            }
+                            // barriers.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+            }
+            // Make ball
+            let balls = [];
+            let active = false;
+            balls.push(new Ball(canvas.width / 2, canvas.height / 2 + 250, 12));
+
+            // Upgrades
+            function upgrade(type) {
+                if (active) return;
+                // let upgradeType = 4;
+                // if (barriers.length == 0) {
+                // upgradeType = Math.floor(Math.random() * 5);
+                // } else {
+                //     upgradeType = Math.floor(Math.random() * 4);
+                // }
+
+                switch (type) {
+                    case 0:
+                        speed = 8;
+                        active = true;
+                        setTimeout(() => {
+                            speed = 6;
+                            setTimeout(() => {
+                                active = false;
+                            }, 3000);
+                        }, 10000);
+                        break;
+                    case 1:
+                        avatar.w += 50;
+                        avatar.x -= 25;
+                        active = true;
+                        setTimeout(() => {
+                            avatar.w -= 50;
+                            avatar.x += 25;
+                            setTimeout(() => {
+                                active = false;
+                            }, 3000);
+                        }, 10000);
+                        break;
+                    case 2:
+                        balls.push(new Ball(canvas.width / 2, canvas.height / 2 + 250, 12));
+                        balls.push(new Ball(canvas.width / 2, canvas.height / 2 + 250, 12));
+                        balls[1].direction();
+                        balls[2].direction();
+                        active = true;
+                        setTimeout(() => {
+                            active = false;
+                        }, 15000);
+                        break;
+                    case 3:
+                        // new Brick((canvas.width / 2 - 100), 730, 200, 15, 8, true);
+                        // new Brick(90, 730, 200, 15, 8, true);
+                        // new Brick((canvas.width - 290), 730, 200, 15, 8, true);
+                        new Brick(0, canvas.height - 15, canvas.width, 15, 8, true);
+                        active = true;
+                        setTimeout(() => {
+                            barriers = [];
+                            setTimeout(() => {
+                                active = false;
+                            }, 3000);
+                        }, 10000);
+                        break;
+                }
+            }
+
+            let upgradeImages = [new Image(), new Image(), new Image(), new Image()];
+            upgradeImages[0].src = '/atariBreakout/speedupgrade.png';
+            upgradeImages[1].src = '/atariBreakout/paddleupgrade.png';
+            upgradeImages[2].src = '/atariBreakout/ballsupgrade.png';
+            upgradeImages[3].src = '/atariBreakout/barrierupgrade.png';
+
+            let upgrades = [];
+            class Upgrade {
+                constructor(x, y, w, h, type) {
+                    this.x = x;
+                    this.y = y;
+                    this.w = w;
+                    this.h = h;
+                    this.type = type;
+                    upgrades.push(this);
+                }
+
+                draw() {
+                    // ctx.fillStyle = "#ddd";
+                    // const thickness = 6.7;
+                    // const offset = (this.w - thickness) / 2;
+                    // ctx.fillRect(this.x, this.y + offset, this.w, thickness);
+                    // ctx.fillRect(this.x + offset, this.y, thickness, this.h);
+                    ctx.drawImage(upgradeImages[this.type], this.x, this.y, this.w, this.h);
+                }
+
+                drop() {
+                    this.y += 2;
+                    if (this.y + this.h > canvas.height) {
+                        upgrades.splice(upgrades.indexOf(this), 1);
+                    }
+                    if (this.y + this.h > avatar.y && this.y < avatar.y + avatar.h && this.x + this.w > avatar.x && this.x < avatar.x + avatar.w) {
+                        upgrades.splice(upgrades.indexOf(this), 1);
+                        upgrade(this.type);
+                    }
+                }
+            }
+
+            // Game state
+            let gamestarted = false;
+            let gameover = false;
+
+            // Initialize before start
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#1f1f1f";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#fff";
+            ctx.font = "24px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Press Spacebar to Start", canvas.width / 2, canvas.height / 2 + 80);
+            paddle();
+            bricks.forEach(brick => brick.draw());
+            balls[0].draw();
+            balls[0].direction();
+
+            // Gameloop function
+            function gameloop() {
+                if (!gameover && gamestarted) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#1f1f1f";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    paddle();
+                    bricks.forEach(brick => brick.draw());
+                    barriers.forEach(brick => brick.draw());
+                    balls.forEach(ball => ball.draw());
+                    balls.forEach(ball => ball.move());
+                    balls[0].end();
+                    upgrades.forEach(upgrade => upgrade.draw());
+                    upgrades.forEach(upgrade => upgrade.drop());
+                    requestAnimationFrame(gameloop);
+                };
+            }
+
+            // Paddle event listeners
+            document.addEventListener('keydown', (event) => {
+                if (event.key == "d" || event.key == "ArrowRight") {
+                    right = true;
+                } else if (event.key == "a" || event.key == "ArrowLeft") {
+                    left = true;
+                }
+            });
+            document.addEventListener('keyup', (event) => {
+                if (event.key == "d" || event.key == "ArrowRight") {
+                    right = false;
+                } else if (event.key == "a" || event.key == "ArrowLeft") {
+                    left = false;
+                }
+            });
+
+            // Game start event listener
+            document.addEventListener('keydown', function start(event) {
+                if (event.key === " " && !gamestarted) {
+                    gamestarted = true;
+                    gameloop();
+                    document.removeEventListener('keydown', start);
+                }
+            });
+        </script>
+
+        </html>
